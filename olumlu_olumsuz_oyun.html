@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Türkçe Öğrenme Oyunu - لعبة اللغة التركية</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #a8edd9 0%, #fed6e3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            text-align: center;
+            position: relative;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+
+        .progress-badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+
+        .score-badge {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 280px;
+            border-radius: 16px;
+            overflow: hidden;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            border: 3px solid #e5e7eb;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-option {
+            background: #ffffff;
+            border: 3px solid #6366f1;
+            color: #4338ca;
+            padding: 18px 10px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn-option:hover {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-option.correct {
+            background: #22c55e !important;
+            border-color: #15803d !important;
+            color: white !important;
+        }
+
+        .btn-option.wrong {
+            background: #ef4444 !important;
+            border-color: #b91c1c !important;
+            color: white !important;
+        }
+
+        .results-box {
+            display: none;
+            padding: 20px 10px;
+        }
+
+        .results-box h2 {
+            color: #312e81;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .results-box p {
+            font-size: 1.3rem;
+            color: #4b5563;
+        }
+
+        .btn-restart {
+            margin-top: 20px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-restart:hover {
+            background: #7c3aed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <div id="quiz-screen">
+        <div class="header-info">
+            <span class="progress-badge" id="question-number">Soru: 1 / 20</span>
+            <span class="score-badge" id="score-text">Puan: 0</span>
+        </div>
+
+        <div class="image-container">
+            <img id="question-image" src="" alt="Soru Görseli">
+        </div>
+
+        <div class="options-grid">
+            <button class="btn-option" onclick="checkAnswer(0)" id="opt0">Seçenek 1</button>
+            <button class="btn-option" onclick="checkAnswer(1)" id="opt1">Seçenek 2</button>
+        </div>
+    </div>
+
+    <div id="results-screen" class="results-box">
+        <h2>Tebrikler! 🎉</h2>
+        <p id="final-score">Puanınız: 0 / 20</p>
+        <button class="btn-restart" onclick="restartGame()">Yeniden Başla 🔄</button>
+    </div>
+</div>
+
+<script>
+    // قائمة الأسئلة (20 سؤالاً)
+    const questions = [
+        { imageUrl: "img/sut.jfif", options: ["Süt içiyor", "Süt içmiyor"], correct: 0 },
+        { imageUrl: "img/elma.jfif", options: ["Elma yiyor", "Elma yemiyor"], correct: 1 },
+        { imageUrl: "img/kitap.jfif", options: ["Kitap okuyor", "Kitap okumuyor"], correct: 0 },
+        { imageUrl: "img/calismiyor.jpg", options: ["Ders çalışıyor", "Ders çalışmıyor"], correct: 1 },
+        { imageUrl: "img/top.jpg", options: ["Top oynuyor", "Top oynamıyor"], correct: 0 },
+        { imageUrl: "img/resim.jfif", options: ["Resim çiziyor", "Resim çizmiyor"], correct: 1 },
+        { imageUrl: "img/muzik.jfif", options: ["Müzik dinliyor", "Müzik dinlemiyor"], correct: 0 },
+        { imageUrl: "img/yuzmek.jfif", options: ["Yüzüyor", "Yüzmüyor"], correct: 1 },
+        { imageUrl: "img/Kosuyor.jpg", options: ["Koşuyor", "Koşmuyor"], correct: 0 },
+        { imageUrl: "img/uyumuyor.jfif", options: ["Uyuyor", "Uyumuyor"], correct: 1 },
+        { imageUrl: "img/bisiklet.png", options: ["Bisiklete biniyor", "Bisiklete binmiyor"], correct: 0 },
+        { imageUrl: "img/firsa.jfif", options: ["Dişlerini fırçalıyor", "Dişlerini fırçalamıyor"], correct: 1 },
+        { imageUrl: "img/eller.png", options: ["Ellerini yıkıyor", "Ellerini yıkamıyor"], correct: 0 },
+        { imageUrl: "img/tele.jfif", options: ["Televizyon izliyor", "Televizyon izlemiyor"], correct: 1 },
+        { imageUrl: "img/sark.jpg", options: ["Şarkı söylüyor", "Şarkı söylemiyor"], correct: 0 },
+        { imageUrl: "img/dans.jfif", options: ["Dans ediyor", "Dans etmiyor"], correct: 1 },
+        { imageUrl: "img/araba.png", options: ["Araba sürüyor", "Araba sürmüyor"], correct: 0 },
+        { imageUrl: "img/oto.avif", options: ["Otobüse biniyor", "Otobüse binmiyor"], correct: 0 },
+        { imageUrl: "img/gul.png", options: ["Gülüyor", "Gülmüyor"], correct: 0 },
+        { imageUrl: "img/kap.jpg", options: ["Kapıyı açıyor", "Kapıyı açmıyor"], correct: 0 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let canAnswer = true;
+    let audioCtx = null;
+
+    // 🎲 دالة خلط الأسئلة عشوائياً
+    function shuffleQuestions() {
+        for (let i = questions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [questions[i], questions[j]] = [questions[j], questions[i]];
+        }
+    }
+
+    // محاكاة الأصوات برمجياً
+    function playSound(isCorrect) {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (isCorrect) {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } else {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+        }
+    }
+
+    function loadQuestion() {
+        const q = questions[currentQuestion];
+        document.getElementById("question-number").innerText = `Soru: ${currentQuestion + 1} / ${questions.length}`;
+        document.getElementById("score-text").innerText = `Puan: ${score}`;
+        document.getElementById("question-image").src = q.imageUrl;
+
+        const btn0 = document.getElementById("opt0");
+        const btn1 = document.getElementById("opt1");
+
+        btn0.innerText = q.options[0];
+        btn1.innerText = q.options[1];
+
+        btn0.className = "btn-option";
+        btn1.className = "btn-option";
+        canAnswer = true;
+    }
+
+    function checkAnswer(selectedIndex) {
+        if (!canAnswer) return;
+        canAnswer = false;
+
+        const q = questions[currentQuestion];
+        const selectedBtn = document.getElementById(`opt${selectedIndex}`);
+        const correctBtn = document.getElementById(`opt${q.correct}`);
+
+        if (selectedIndex === q.correct) {
+            selectedBtn.classList.add("correct");
+            playSound(true);
+            score++;
+            document.getElementById("score-text").innerText = `Puan: ${score}`;
+        } else {
+            selectedBtn.classList.add("wrong");
+            correctBtn.classList.add("correct");
+            playSound(false);
+        }
+
+        setTimeout(() => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }, 1200);
+    }
+
+    function showResults() {
+        document.getElementById("quiz-screen").style.display = "none";
+        document.getElementById("results-screen").style.display = "block";
+        document.getElementById("final-score").innerText = `Puanınız: ${score} / ${questions.length}`;
+    }
+
+    function restartGame() {
+        currentQuestion = 0;
+        score = 0;
+        shuffleQuestions(); // 🎲 إعادة خلط الأسئلة عند البدء من جديد
+        document.getElementById("results-screen").style.display = "none";
+        document.getElementById("quiz-screen").style.display = "block";
+        loadQuestion();
+    }
+
+    // 🚀 خلط الأسئلة ثم تشغيل اللعبة
+    shuffleQuestions();
+    loadQuestion();
+</script>
+
+</body>
+</html>
