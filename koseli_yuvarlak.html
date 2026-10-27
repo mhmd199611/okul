@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Köşeli mi Yuvarlak mı? - لعبة الأشكال والمجسمات</title>
+<style>
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+margin: 0;
+padding: 20px;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+box-sizing: border-box;
+}
+.game-container {
+background-color: white;
+border-radius: 20px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+padding: 25px;
+max-width: 550px;
+width: 100%;
+text-align: center;
+}
+h1 {
+color: #2c3e50;
+margin-bottom: 5px;
+font-size: 26px;
+}
+.sub-title {
+color: #7f8c8d;
+font-size: 15px;
+margin-bottom: 20px;
+}
+.score-board {
+font-size: 18px;
+font-weight: bold;
+color: #2980b9;
+margin-bottom: 15px;
+background: #ebf5fb;
+padding: 10px;
+border-radius: 10px;
+display: flex;
+justify-content: space-around;
+}
+.card {
+background: #fafafa;
+border: 3px dashed #3498db;
+border-radius: 15px;
+padding: 20px;
+margin: 20px 0;
+min-height: 220px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+}
+.img-container {
+width: 160px;
+height: 160px;
+margin-bottom: 10px;
+display: flex;
+align-items: center;
+justify-content: center;
+background-color: #eee;
+border-radius: 10px;
+overflow: hidden;
+}
+.card-img {
+max-width: 100%;
+max-height: 100%;
+object-fit: contain;
+}
+.card-title {
+font-size: 26px;
+font-weight: bold;
+color: #2c3e50;
+}
+.card-desc {
+font-size: 16px;
+color: #7f8c8d;
+margin-top: 4px;
+}
+.buttons-container {
+display: flex;
+gap: 15px;
+justify-content: center;
+}
+.btn {
+flex: 1;
+padding: 16px;
+font-size: 19px;
+font-weight: bold;
+border: none;
+border-radius: 12px;
+cursor: pointer;
+transition: all 0.2s ease;
+color: white;
+box-shadow: 0 5px 0 rgba(0,0,0,0.1);
+}
+.btn:active {
+transform: translateY(3px);
+box-shadow: none;
+}
+.btn-koseli {
+background-color: #e67e22;
+}
+.btn-koseli:hover {
+background-color: #d35400;
+}
+.btn-yuvarlak {
+background-color: #8e44ad;
+}
+.btn-yuvarlak:hover {
+background-color: #71368a;
+}
+.feedback {
+min-height: 40px;
+font-size: 20px;
+font-weight: bold;
+margin-top: 15px;
+padding: 8px;
+border-radius: 8px;
+}
+.correct {
+color: #27ae60;
+background-color: #d4efdf;
+}
+.wrong {
+color: #c0392b;
+background-color: #fadbd8;
+}
+.restart-btn {
+display: none;
+margin-top: 20px;
+padding: 12px 25px;
+font-size: 18px;
+background-color: #3498db;
+color: white;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+<h1>Köşeli mi Yuvarlak mı?</h1>
+<div class="sub-title">اختر التصنيف الصحيح لكل مجسم (ذو زوايا أم دائري)</div>
+
+<div class="score-board">
+<div>السؤال: <span id="current-q">1</span> / <span id="total-q">10</span></div>
+<div>النقاط: <span id="score">0</span></div>
+</div>
+
+<div id="game-box">
+<div class="card">
+<div class="img-container">
+<img id="item-image" class="card-img" src="" alt="Görsel" onerror="this.style.display='none'; document.getElementById('img-fallback').style.display='block';">
+<span id="img-fallback" style="display:none; color:#888; font-size:14px;">[ضع الصورة في مجلد images]</span>
+</div>
+<div class="card-title" id="item-name">Futbol Topu</div>
+<div class="card-desc" id="item-desc">(كرة القدم)</div>
+</div>
+
+<div class="buttons-container">
+<button class="btn btn-koseli" onclick="checkAnswer('koseli')">
+📐 Köşeli<br><small style="font-size:13px; font-weight:normal;">(له زوايا)</small>
+</button>
+<button class="btn btn-yuvarlak" onclick="checkAnswer('yuvarlak')">
+⚽ Yuvarlak<br><small style="font-size:13px; font-weight:normal;">(دائري / بدون زوايا)</small>
+</button>
+</div>
+
+<div class="feedback" id="feedback"></div>
+</div>
+
+<button class="restart-btn" id="restart-btn" onclick="restartGame()">إعادة اللعبة 🔄 Tekrar Oyna</button>
+</div>
+
+<script>
+// إعداد الصوت التلقائي عن طريق Web Audio API
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playCorrectSound() {
+if (audioCtx.state === 'suspended') {
+audioCtx.resume();
+}
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+
+osc.type = 'sine';
+osc.frequency.setValueAtTime(523.25, now); // نغمة C5
+osc.frequency.setValueAtTime(659.25, now + 0.1); // نغمة E5
+
+gain.gain.setValueAtTime(0.3, now);
+gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+
+osc.start(now);
+osc.stop(now + 0.35);
+}
+
+function playWrongSound() {
+if (audioCtx.state === 'suspended') {
+audioCtx.resume();
+}
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+
+osc.type = 'sawtooth';
+osc.frequency.setValueAtTime(220, now); // نغمة A3
+osc.frequency.setValueAtTime(160, now + 0.15); // نغمة منخفضة
+
+gain.gain.setValueAtTime(0.25, now);
+gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+osc.connect(gain);
+gain.connect(audioCtx.destination);
+
+osc.start(now);
+osc.stop(now + 0.4);
+}
+
+// قائمة العناصر المستمدة من كتاب الرياضيات للصف الثاني
+const items = [
+{ name: "Futbol Topu", desc: "كرة قدم", imgSrc: "images/futbol_topu.jpg", type: "yuvarlak" },
+{ name: "Zekâ Küpü", desc: "مكعب الذكاء", imgSrc: "images/zekakupu.png", type: "koseli" },
+{ name: "Konserve Kutusu", desc: "علبة كونسروة (أسطوانة)", imgSrc: "images/konserve_kutusu.jpeg", type: "yuvarlak" },
+{ name: "Çamaşır Makinesi", desc: "غسالة ملابس", imgSrc: "images/camasir_makinesi.webp", type: "koseli" },
+{ name: "Tenis Topu", desc: "كرة تنس", imgSrc: "images/tenis_topu.avif", type: "yuvarlak" },
+{ name: "Süt Kutusu", desc: "علبة حليب", imgSrc: "images/sut_kutusu.avif", type: "koseli" },
+{ name: "Pil", desc: "بطارية (أسطوانة)", imgSrc: "images/pil.jpg", type: "yuvarlak" },
+{ name: "Küp Şeker", desc: "مكعب سكر", imgSrc: "images/kup_seker.jpg", type: "koseli" },
+{ name: "Termos", desc: "ترمس", imgSrc: "images/termos.webp", type: "yuvarlak" },
+{ name: "Hediye Kutusu", desc: "صندوق هدية", imgSrc: "images/hediye_kutusu.jfif", type: "koseli" }
+];
+
+
+let currentIndex = 0;
+let score = 0;
+let shuffledItems = [];
+
+function shuffle(array) {
+return array.sort(() => Math.random() - 0.5);
+}
+
+function initGame() {
+shuffledItems = shuffle([...items]);
+currentIndex = 0;
+score = 0;
+document.getElementById("score").innerText = score;
+document.getElementById("total-q").innerText = shuffledItems.length;
+document.getElementById("restart-btn").style.display = "none";
+document.getElementById("game-box").style.display = "block";
+showQuestion();
+}
+
+function showQuestion() {
+if (currentIndex >= shuffledItems.length) {
+endGame();
+return;
+}
+const item = shuffledItems[currentIndex];
+document.getElementById("current-q").innerText = currentIndex + 1;
+
+const imgElem = document.getElementById("item-image");
+const fallbackElem = document.getElementById("img-fallback");
+
+imgElem.style.display = "block";
+fallbackElem.style.display = "none";
+imgElem.src = item.imgSrc;
+
+document.getElementById("item-name").innerText = item.name;
+document.getElementById("item-desc").innerText = "(" + item.desc + ")";
+document.getElementById("feedback").innerText = "";
+document.getElementById("feedback").className = "feedback";
+}
+
+function checkAnswer(answer) {
+const item = shuffledItems[currentIndex];
+const feedback = document.getElementById("feedback");
+
+if (answer === item.type) {
+playCorrectSound(); // تشغيل صوت الإجابة الصحيحة
+score += 10;
+document.getElementById("score").innerText = score;
+feedback.innerText = "Tebrikler!🎉";
+feedback.className = "feedback correct";
+} else {
+playWrongSound(); // تشغيل صوت الإجابة الخاطئة
+feedback.innerText = "Yanlış!❌";
+feedback.className = "feedback wrong";
+}
+
+setTimeout(() => {
+currentIndex++;
+showQuestion();
+}, 1200);
+}
+
+function endGame() {
+document.getElementById("game-box").style.display = "none";
+const restartBtn = document.getElementById("restart-btn");
+restartBtn.style.display = "inline-block";
+alert("Tebrikler! انتهت اللعبة.\nمجموع نقاطك: " + score + " من " + (shuffledItems.length * 10));
+}
+
+function restartGame() {
+initGame();
+}
+
+window.onload = initGame;
+</script>
+</body>
+</html>
