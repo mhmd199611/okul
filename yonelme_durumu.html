@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nereye Gidiyoruz? - Türkçe Öğrenme Oyunu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Fredoka & Quicksand -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #a8edd9 0%, #fed6e3 100%);
+            min-height: 100vh;
+            user-select: none;
+        }
+        .bubble-btn {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bubble-btn:hover:not(:disabled) {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .bubble-btn:active:not(:disabled) {
+            transform: translateY(2px) scale(0.98);
+        }
+        .bounce-in {
+            animation: bounceIn 0.5s ease;
+        }
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 1; transform: scale(1.05); }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .vowel-highlight {
+            color: #e11d48;
+            background-color: #fef08a;
+            padding: 0 6px;
+            border-radius: 8px;
+            text-decoration: underline;
+            text-decoration-thickness: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between p-4 md:p-6 text-gray-800">
+
+    <!-- Header Navigation Bar -->
+    <header class="max-w-4xl mx-auto w-full flex items-center justify-between bg-white/80 backdrop-blur-md p-4 rounded-3xl shadow-lg border-4 border-white mb-4">
+        <div class="flex items-center space-x-3">
+            <span class="text-3xl sm:text-4xl floating">🚌</span>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold text-amber-500 leading-tight">Nereye Gidiyoruz?</h1>
+                <p class="text-xs sm:text-sm text-gray-500 font-bold tracking-wide">Yönelme Durumu (-a / -e)</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Hint Button -->
+            <button id="hint-btn" onclick="openHintModal()" class="bg-amber-400 hover:bg-amber-500 text-amber-900 font-bold py-2 px-3 sm:px-4 rounded-2xl shadow-md border-b-4 border-amber-600 flex items-center space-x-1 text-sm sm:text-base bubble-btn">
+                <span>💡</span>
+                <span class="hidden sm:inline">Kural</span>
+            </button>
+            
+            <!-- Score Counter -->
+            <div class="bg-emerald-100 border-2 border-emerald-400 rounded-2xl px-3 py-1.5 flex items-center space-x-1 sm:space-x-2 shadow-inner">
+                <span class="text-xl sm:text-2xl">⭐</span>
+                <span id="score" class="text-xl sm:text-2xl font-black text-emerald-600">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="max-w-4xl mx-auto w-full flex-grow flex flex-col justify-center">
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl border-4 border-white text-center bounce-in">
+            <div class="text-6xl sm:text-7xl mb-4 floating">🎈</div>
+            <h2 class="text-3xl sm:text-4xl font-black text-purple-600 mb-4">Türkçe Öğrenme Oyununa Hoş Geldiniz!</h2>
+            <p class="text-lg text-gray-600 mb-6 max-w-lg mx-auto font-medium">
+                Son sesli harfe dikkat et! Doğru takıyı (<strong>-a, -e, -ya, -ye</strong>) seçerek 20 soruyu tamamla!
+            </p>
+
+            <!-- Quick Rule Highlight -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto mb-8 text-left text-sm">
+                <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4">
+                    <span class="font-bold text-amber-800 text-base block mb-1">🟧 Kalın Harfler:</span>
+                    <span class="font-bold text-amber-600 text-lg">A, I, O, U</span> ➔ <span class="bg-amber-200 px-2 py-0.5 rounded-lg text-amber-900 font-black">-a / -ya</span>
+                </div>
+                <div class="bg-sky-50 border-2 border-sky-300 rounded-2xl p-4">
+                    <span class="font-bold text-sky-800 text-base block mb-1">🟦 İnce Harfler:</span>
+                    <span class="font-bold text-sky-600 text-lg">E, İ, Ö, Ü</span> ➔ <span class="bg-sky-200 px-2 py-0.5 rounded-lg text-sky-900 font-black">-e / -ye</span>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full sm:w-auto bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-2xl py-4 px-10 rounded-3xl shadow-xl border-b-8 border-teal-700 bubble-btn">
+                OYUNA BAŞLA 🚀
+            </button>
+        </div>
+
+        <!-- GAMEPLAY SCREEN -->
+        <div id="game-screen" class="hidden flex-col">
+            <!-- Progress Bar -->
+            <div class="mb-4 bg-white/70 backdrop-blur-md p-3 rounded-2xl border-2 border-white shadow-sm">
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <span id="question-number" class="font-bold text-purple-700 text-sm sm:text-base">Soru: 1 / 20</span>
+                    <span id="progress-percent" class="font-bold text-gray-500 text-sm">5%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-4 rounded-full overflow-hidden p-0.5 border border-gray-300">
+                    <div id="progress-bar" class="bg-gradient-to-r from-purple-400 to-pink-500 h-full rounded-full transition-all duration-300 w-[5%]"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-white text-center mb-4 relative overflow-hidden">
+                <!-- Day & Subject Badge -->
+                <div class="inline-block bg-purple-100 text-purple-800 font-black px-4 py-1.5 rounded-full text-sm sm:text-base mb-3 border border-purple-200">
+                    <span id="question-day">Pazartesi</span> 🗓️
+                </div>
+
+                <!-- Visual Emoji Frame -->
+                <div class="text-6xl sm:text-7xl mb-3 h-20 flex items-center justify-center">
+                    <span id="question-emoji" class="floating">🏫</span>
+                </div>
+
+                <!-- Sentence with Blank & Vowel Focus -->
+                <h2 id="question-sentence" class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-800 mb-6 leading-relaxed">
+                    <!-- Dynamic Sentence -->
+                </h2>
+
+                <!-- Answer Choices -->
+                <div id="choices-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-xl mx-auto">
+                    <!-- Dynamic Buttons -->
+                </div>
+            </div>
+
+            <!-- Feedback Alert Banner -->
+            <div id="feedback-card" class="hidden rounded-2xl p-4 text-center font-bold text-lg shadow-lg border-2 transition-all duration-300 bounce-in">
+                <p id="feedback-title" class="text-xl mb-1"></p>
+                <p id="feedback-explanation" class="text-sm sm:text-base font-medium"></p>
+                <!-- Manual Next Button displayed ONLY on incorrect answers -->
+                <button id="next-btn" onclick="nextQuestion()" class="hidden mt-3 bg-white hover:bg-gray-50 text-gray-800 font-black py-2 px-6 rounded-xl shadow border border-gray-200 bubble-btn text-sm sm:text-base">
+                    Sonraki Soru ➡️
+                </button>
+            </div>
+        </div>
+
+        <!-- END SUMMARY SCREEN -->
+        <div id="end-screen" class="hidden bg-white/90 backdrop-blur-md rounded-3xl p-6 sm:p-10 shadow-2xl border-4 border-white text-center bounce-in">
+            <div id="result-emoji" class="text-7xl mb-2">🏆</div>
+            <h2 class="text-3xl sm:text-4xl font-black text-purple-700 mb-2">Tebrikler! Oyunu Tamamladın!</h2>
+            <p id="result-message" class="text-lg text-gray-600 mb-6 font-medium">Harika bir performanstı!</p>
+
+            <!-- Star Rating Display -->
+            <div id="stars-container" class="flex justify-center space-x-2 text-4xl sm:text-5xl mb-6">
+                <!-- Stars -->
+            </div>
+
+            <!-- Score Summary Box -->
+            <div class="bg-purple-50 rounded-2xl p-6 border-2 border-purple-200 max-w-sm mx-auto mb-8">
+                <div class="flex justify-between items-center mb-3 border-b border-purple-200 pb-2">
+                    <span class="text-gray-600 font-bold">Doğru Cevap:</span>
+                    <span id="final-score" class="text-2xl font-black text-emerald-600">0 / 20</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 font-bold">Başarı Oranı:</span>
+                    <span id="final-percent" class="text-2xl font-black text-purple-600">0%</span>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black text-2xl py-4 px-10 rounded-3xl shadow-xl border-b-8 border-indigo-800 bubble-btn">
+                TEKRAR OYNA 🔄
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs sm:text-sm font-bold text-gray-600 mt-6 py-2">
+        İlkokul 2. Sınıf Türkçe Dersi • Yönelme Durumu Eki Pratik Oyunu 🌟
+    </footer>
+
+    <!-- RULE HINT MODAL -->
+    <div id="hint-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border-4 border-amber-300 relative bounce-in max-h-[90vh] overflow-y-auto">
+            <button onclick="closeHintModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-600 w-10 h-10 rounded-full font-black text-xl flex items-center justify-center border border-gray-300">
+                ✕
+            </button>
+
+            <div class="text-center mb-4">
+                <span class="text-5xl">💡</span>
+                <h3 class="text-2xl font-black text-amber-600 mt-2">Yönelme Ekleri Kuralı</h3>
+                <p class="text-sm text-gray-500">Son sesli harfe dikkat et!</p>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-base">
+                <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-200">
+                    <h4 class="font-black text-amber-900 text-lg flex items-center">
+                        <span class="mr-2">🟧</span> Kalın Sesli Harfler
+                    </h4>
+                    <p class="text-amber-800 font-bold text-xl my-1">A, I, O, U</p>
+                    <p class="text-gray-700">Kelimenin son sesli harfi bunlardan biriyse <strong class="text-amber-700 font-black text-lg">-a</strong> (veya <strong class="text-amber-700 font-black text-lg">-ya</strong>) eklenir.</p>
+                </div>
+
+                <div class="bg-sky-50 rounded-2xl p-4 border-2 border-sky-200">
+                    <h4 class="font-black text-sky-900 text-lg flex items-center">
+                        <span class="mr-2">🟦</span> İnce Sesli Harfler
+                    </h4>
+                    <p class="text-sky-800 font-bold text-xl my-1">E, İ, Ö, Ü</p>
+                    <p class="text-gray-700">Kelimenin son sesli harfi bunlardan biriyse <strong class="text-sky-700 font-black text-lg">-e</strong> (veya <strong class="text-sky-700 font-black text-lg">-ye</strong>) eklenir.</p>
+                </div>
+
+                <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-xs text-purple-900">
+                    <strong>📌 Kaynaştırma Harfi "y":</strong> Kelime ünlü harfle biterse araya <strong>"y"</strong> girer! (Bahçe ➔ Bahçe<strong>ye</strong>, Sinema ➔ Sinema<strong>ya</strong>)
+                </div>
+            </div>
+
+            <button onclick="closeHintModal()" class="w-full mt-6 bg-amber-400 hover:bg-amber-500 text-amber-950 font-black py-3 rounded-2xl shadow-lg bubble-btn">
+                ANLADIM, OYUNA DÖN! 👍
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Raw Questions Bank (20 Items)
+        const rawQuestions = [
+            {
+                subject: "Babam",
+                day: "Pazartesi",
+                prefixWord: "i",
+                highlightVowel: "ş",
+                suffixWord: "",
+                fullWord: "iş",
+                formattedWord: "i<u class='vowel-highlight'>ş</u>", // Note: last vowel is i
+                emoji: "💼",
+                options: ["işe", "işa", "işye", "işya"],
+                correct: "işe",
+                explanation: "'İş' kelimesinin son sesli harfi 'i' (ince) olduğu için -e eki gelir."
+            },
+            {
+                subject: "Annem",
+                day: "Salı",
+                fullWord: "market",
+                formattedWord: "mark<u class='vowel-highlight'>e</u>t",
+                emoji: "🛒",
+                options: ["marketa", "markete", "marketya", "marketye"],
+                correct: "markete",
+                explanation: "'Market' kelimesinin son sesli harfi 'e' (ince) olduğu için -e eki gelir."
+            },
+            {
+                subject: "Dedem",
+                day: "Çarşamba",
+                fullWord: "doktor",
+                formattedWord: "dokt<u class='vowel-highlight'>o</u>r",
+                emoji: "👨‍⚕️",
+                options: ["doktore", "doktora", "doktorya", "doktorye"],
+                correct: "doktora",
+                explanation: "'Doktor' kelimesinin son sesli harfi 'o' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Ninem",
+                day: "Perşembe",
+                fullWord: "park",
+                formattedWord: "p<u class='vowel-highlight'>a</u>rk",
+                emoji: "🛝",
+                options: ["parke", "parka", "parkya", "parkye"],
+                correct: "parka",
+                explanation: "'Park' kelimesinin son sesli harfi 'a' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Erkek kardeşim",
+                day: "Cuma",
+                fullWord: "havuz",
+                formattedWord: "hav<u class='vowel-highlight'>u</u>z",
+                emoji: "🏊‍♂️",
+                options: ["havuze", "havuza", "havuzya", "havuzye"],
+                correct: "havuza",
+                explanation: "'Havuz' kelimesinin son sesli harfi 'u' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Orhan",
+                day: "Cumartesi",
+                fullWord: "fırın",
+                formattedWord: "fır<u class='vowel-highlight'>ı</u>n",
+                emoji: "🥖",
+                options: ["fırıne", "fırına", "fırınya", "fırınye"],
+                correct: "fırına",
+                explanation: "'Fırın' kelimesinin son sesli harfi 'ı' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Bekir",
+                day: "Pazar",
+                fullWord: "deniz",
+                formattedWord: "den<u class='vowel-highlight'>i</u>z",
+                emoji: "🏖️",
+                options: ["deniza", "denize", "denizya", "denizye"],
+                correct: "denize",
+                explanation: "'Deniz' kelimesinin son sesli harfi 'i' (ince) olduğu için -e eki gelir."
+            },
+            {
+                subject: "Ben",
+                day: "Bugün",
+                fullWord: "okul",
+                formattedWord: "ok<u class='vowel-highlight'>u</u>l",
+                emoji: "🏫",
+                options: ["okule", "okula", "okulya", "okulye"],
+                correct: "okula",
+                explanation: "'Okul' kelimesinin son sesli harfi 'u' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Ayşe",
+                day: "Pazartesi",
+                fullWord: "kütüphane",
+                formattedWord: "kütüphan<u class='vowel-highlight'>e</u>",
+                emoji: "📚",
+                options: ["kütüphaneye", "kütüphaneya", "kütüphanee", "kütüphanea"],
+                correct: "kütüphaneye",
+                explanation: "'Kütüphane' kelimesi 'e' ile bittiği için araya 'y' girer ve -ye eki alır."
+            },
+            {
+                subject: "Ali",
+                day: "Salı",
+                fullWord: "sinema",
+                formattedWord: "sinem<u class='vowel-highlight'>a</u>",
+                emoji: "🎬",
+                options: ["sinemaye", "sinemaya", "sinemaa", "sinemae"],
+                correct: "sinemaya",
+                explanation: "'Sinema' kelimesi 'a' ile bittiği için araya 'y' girer ve -ya eki alır."
+            },
+            {
+                subject: "Öğretmen",
+                day: "Çarşamba",
+                fullWord: "sınıf",
+                formattedWord: "sın<u class='vowel-highlight'>ı</u>f",
+                emoji: "👩‍🏫",
+                options: ["sınıfe", "sınıfa", "sınıfya", "sınıfye"],
+                correct: "sınıfa",
+                explanation: "'Sınıf' kelimesinin son sesli harfi 'ı' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Biz",
+                day: "Hafta sonu",
+                fullWord: "köy",
+                formattedWord: "k<u class='vowel-highlight'>ö</u>y",
+                emoji: "🏡",
+                options: ["köya", "köye", "köyye", "köyya"],
+                correct: "köye",
+                explanation: "'Köy' kelimesinin son sesli harfi 'ö' (ince) olduğu için -e eki gelir."
+            },
+            {
+                subject: "Pamuk",
+                day: "Perşembe",
+                fullWord: "bahçe",
+                formattedWord: "bahç<u class='vowel-highlight'>e</u>",
+                emoji: "🐱",
+                options: ["bahçeya", "bahçeye", "bahçea", "bahçee"],
+                correct: "bahçeye",
+                explanation: "'Bahçe' kelimesi 'e' harfiyle bittiği için -ye eki alır."
+            },
+            {
+                subject: "Kuzenim",
+                day: "Cuma",
+                fullWord: "müze",
+                formattedWord: "müz<u class='vowel-highlight'>e</u>",
+                emoji: "🏛️",
+                options: ["müzeye", "müzeya", "müzee", "müzea"],
+                correct: "müzeye",
+                explanation: "'Müze' kelimesinin son sesli harfi 'e' (ince) olduğu için -ye eki gelir."
+            },
+            {
+                subject: "Ahmet",
+                day: "Cumartesi",
+                fullWord: "stadyum",
+                formattedWord: "stady<u class='vowel-highlight'>u</u>m",
+                emoji: "⚽",
+                options: ["stadyume", "stadyuma", "stadyumya", "stadyumye"],
+                correct: "stadyuma",
+                explanation: "'Stadyum' kelimesinin son sesli harfi 'u' (kalın) olduğu için -a eki gelir."
+            },
+            {
+                subject: "Abim",
+                day: "Pazar",
+                fullWord: "ev",
+                formattedWord: "<u class='vowel-highlight'>e</u>v",
+                emoji: "🏠",
+                options: ["eva", "eve", "evye", "evya"],
+                correct: "eve",
+                explanation: "'Ev' kelimesinin son sesli harfi 'e' (ince) olduğu için -e eki gelir."
+            },
+            {
+                subject: "Ailem",
+                day: "Pazartesi",
+                fullWord: "lokanta",
+                formattedWord: "lokant<u class='vowel-highlight'>a</u>",
+                emoji: "🍽️",
+                options: ["lokantaye", "lokantaya", "lokantaa", "lokantae"],
+                correct: "lokantaya",
+                explanation: "'Lokanta' kelimesi 'a' (kalın) ile bittiği için -ya eki alır."
+            },
+            {
+                subject: "Teyzem",
+                day: "Salı",
+                fullWord: "hastane",
+                formattedWord: "hastan<u class='vowel-highlight'>e</u>",
+                emoji: "🏥",
+                options: ["hastaneya", "hastaneye", "hastanee", "hastanea"],
+                correct: "hastaneye",
+                explanation: "'Hastane' kelimesi 'e' (ince) ile bittiği için -ye eki alır."
+            },
+            {
+                subject: "Çocuklar",
+                day: "Çarşamba",
+                fullWord: "orman",
+                formattedWord: "orm<u class='vowel-highlight'>a</u>n",
+                emoji: "🌲",
+                options: ["ormane", "ormana", "ormanya", "ormanye"],
+                correct: "ormana",
+                explanation: "'Orman' kelimesinin son sesli harfi 'a' (kalın) olduğu için -a eki gelir."
+            }
+     
+        ];
+
+        // Game State Variables
+        let activeQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let canAnswer = true;
+        let autoAdvanceTimer = null;
+
+        // Shuffle Utility Function (Fisher-Yates Algorithm)
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Web Audio API Sound Effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(240, audioCtx.currentTime); 
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.15); 
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.4);
+                }
+            } catch (e) {
+                console.log("Audio play deferred", e);
+            }
+        }
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        
+        const questionNumberEl = document.getElementById('question-number');
+        const progressBarEl = document.getElementById('progress-bar');
+        const progressPercentEl = document.getElementById('progress-percent');
+        const scoreEl = document.getElementById('score');
+        
+        const questionDayEl = document.getElementById('question-day');
+        const questionEmojiEl = document.getElementById('question-emoji');
+        const questionSentenceEl = document.getElementById('question-sentence');
+        const choicesContainerEl = document.getElementById('choices-container');
+        
+        const feedbackCardEl = document.getElementById('feedback-card');
+        const feedbackTitleEl = document.getElementById('feedback-title');
+        const feedbackExplanationEl = document.getElementById('feedback-explanation');
+        const nextBtnEl = document.getElementById('next-btn');
+        
+        const hintModalEl = document.getElementById('hint-modal');
+
+        // Start / Restart Game
+        function startGame() {
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+            
+            // Randomize questions order
+            activeQuestions = shuffleArray(rawQuestions);
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreEl.textContent = score;
+            
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameScreen.classList.add('flex');
+
+            loadQuestion();
+        }
+
+        // Load Question
+        function loadQuestion() {
+            canAnswer = true;
+            feedbackCardEl.classList.add('hidden');
+            nextBtnEl.classList.add('hidden');
+            
+            const q = activeQuestions[currentQuestionIndex];
+
+            // Update Header & Progress Bar
+            questionNumberEl.textContent = `Soru: ${currentQuestionIndex + 1} / ${activeQuestions.length}`;
+            const percent = Math.round(((currentQuestionIndex + 1) / activeQuestions.length) * 100);
+            progressBarEl.style.width = `${percent}%`;
+            progressPercentEl.textContent = `${percent}%`;
+
+            // Update Card Details
+            questionDayEl.textContent = `${q.subject} • ${q.day}`;
+            questionEmojiEl.textContent = q.emoji;
+
+            // Sentence Format with Highlighted Vowel
+            questionSentenceEl.innerHTML = `${q.subject}, ${q.day.toLowerCase()} <span id="blank-space" class="text-purple-700 bg-purple-50 border-b-4 border-purple-400 px-3 py-1 rounded-2xl inline-block">${q.formattedWord}.....</span> gidiyor.`;
+
+            // Shuffle Option Buttons
+            choicesContainerEl.innerHTML = '';
+            const shuffledOptions = shuffleArray(q.options);
+            
+            shuffledOptions.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white hover:bg-purple-50 text-purple-950 border-3 border-purple-200 hover:border-purple-400 font-bold text-xl sm:text-2xl py-3 sm:py-4 px-6 rounded-2xl shadow-md bubble-btn flex items-center justify-center space-x-2";
+                btn.onclick = () => checkAnswer(option, btn);
+                btn.textContent = option;
+                choicesContainerEl.appendChild(btn);
+            });
+        }
+
+        // Check Answer & Auto-advance logic
+        function checkAnswer(selectedOption, clickedBtn) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            const q = activeQuestions[currentQuestionIndex];
+            const isCorrect = selectedOption === q.correct;
+            const blankSpaceEl = document.getElementById('blank-space');
+
+            // Disable all option buttons
+            const allBtns = choicesContainerEl.querySelectorAll('button');
+            allBtns.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent === q.correct) {
+                    btn.classList.remove('bg-white', 'hover:bg-purple-50', 'border-purple-200');
+                    btn.classList.add('bg-emerald-500', 'text-white', 'border-emerald-700', 'shadow-lg');
+                }
+            });
+
+            if (isCorrect) {
+                // Correct Answer Logic
+                score++;
+                scoreEl.textContent = score;
+                playSound('correct');
+                
+                // Highlight Sentence Space
+                blankSpaceEl.textContent = q.correct;
+                blankSpaceEl.className = "text-emerald-700 bg-emerald-50 border-b-4 border-emerald-400 px-3 py-1 rounded-2xl font-black";
+
+                // Feedback Banner
+                feedbackCardEl.className = "rounded-2xl p-4 text-center font-bold text-lg shadow-lg border-2 bg-emerald-100 border-emerald-400 text-emerald-900 bounce-in block mt-4";
+                feedbackTitleEl.textContent = "👏 BRAVO! DOĞRU CEVAP!";
+                feedbackExplanationEl.textContent = q.explanation;
+                nextBtnEl.classList.add('hidden'); // Hide next button for auto advance
+
+                // Trigger celebration confetti
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+
+                // AUTO-ADVANCE AFTER 1 SECOND
+                autoAdvanceTimer = setTimeout(() => {
+                    nextQuestion();
+                }, 1100);
+
+            } else {
+                // Wrong Answer Logic
+                playSound('wrong');
+
+                clickedBtn.classList.remove('bg-white', 'hover:bg-purple-50', 'border-purple-200');
+                clickedBtn.classList.add('bg-rose-500', 'text-white', 'border-rose-700');
+
+                // Reveal Correct Answer in Blank Space
+                blankSpaceEl.textContent = q.correct;
+                blankSpaceEl.className = "text-rose-700 bg-rose-50 border-b-4 border-rose-400 px-3 py-1 rounded-2xl font-black";
+
+                // Show Explanation and Manual Next Button
+                feedbackCardEl.className = "rounded-2xl p-4 text-center font-bold text-lg shadow-lg border-2 bg-rose-100 border-rose-400 text-rose-900 bounce-in block mt-4";
+                feedbackTitleEl.textContent = "Tekrar Deneyelim! 💪";
+                feedbackExplanationEl.textContent = q.explanation;
+                nextBtnEl.classList.remove('hidden'); // Show button so child can read explanation
+            }
+        }
+
+        // Advance to next question
+        function nextQuestion() {
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+            currentQuestionIndex++;
+            if (currentQuestionIndex < activeQuestions.length) {
+                loadQuestion();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        // Show Final Score Screen
+        function showEndScreen() {
+            gameScreen.classList.add('hidden');
+            gameScreen.classList.remove('flex');
+            endScreen.classList.remove('hidden');
+
+            const finalScoreEl = document.getElementById('final-score');
+            const finalPercentEl = document.getElementById('final-percent');
+            const resultEmojiEl = document.getElementById('result-emoji');
+            const resultMessageEl = document.getElementById('result-message');
+            const starsContainerEl = document.getElementById('stars-container');
+
+            const percent = Math.round((score / activeQuestions.length) * 100);
+            finalScoreEl.textContent = `${score} / ${activeQuestions.length}`;
+            finalPercentEl.textContent = `%${percent}`;
+
+            // Calculate Stars
+            let starsCount = 1;
+            if (percent >= 80) {
+                starsCount = 3;
+                resultEmojiEl.textContent = "🏆";
+                resultMessageEl.textContent = "Süpersin! Tam bir Türkçe şampiyonususun!";
+            } else if (percent >= 50) {
+                starsCount = 2;
+                resultEmojiEl.textContent = "🌟";
+                resultMessageEl.textContent = "Çok iyi iş çıkardın! Harikasın!";
+            } else {
+                starsCount = 1;
+                resultEmojiEl.textContent = "🎈";
+                resultMessageEl.textContent = "Güzel deneme! Tekrar deneyerek daha çok yıldız toplayabilirsin!";
+            }
+
+            // Render Stars
+            starsContainerEl.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const star = document.createElement('span');
+                star.textContent = i < starsCount ? '⭐' : '⚪';
+                star.className = i < starsCount ? 'floating' : 'opacity-40';
+                starsContainerEl.appendChild(star);
+            }
+
+            // Victory Confetti
+            if (percent >= 70) {
+                confetti({
+                    particleCount: 120,
+                    spread: 100,
+                    origin: { y: 0.5 }
+                });
+            }
+        }
+
+        // Modal Controls
+        function openHintModal() {
+            hintModalEl.classList.remove('hidden');
+        }
+
+        function closeHintModal() {
+            hintModalEl.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
