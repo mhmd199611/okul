@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Türkçe Zamirler Oyunu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            text-align: center;
+            padding: 20px;
+            direction: ltr;
+        }
+        .container {
+            max-width: 550px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; font-size: 24px; }
+        p { color: #666; font-size: 16px; }
+        .card {
+            background: #eef2f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            border: 2px solid #cbd5e1;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 12px;
+            font-size: 18px;
+            border: none;
+            background-color: #3498db;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .next-btn {
+            margin-top: 20px;
+            background-color: #2ecc71;
+            padding: 14px 28px;
+            font-size: 18px;
+            display: none;
+        }
+        .next-btn:hover {
+            background-color: #27ae60;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 25px;
+        }
+        .correct { color: #27ae60; }
+        .wrong { color: #c0392b; }
+        .score {
+            font-size: 16px;
+            margin-top: 15px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Türkçe Zamirler Oyunu 🎯</h1>
+    <p>Cümleye uygun olan zamiri seçiniz:</p>
+    
+    <div id="game">
+        <div class="card" id="sentence-card">...</div>
+        <div class="options" id="options-container"></div>
+        <div class="feedback" id="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">Sonraki Soru ➔</button>
+        <div class="score">Puan: <span id="score-val">0</span> / <span id="total-val">25</span></div>
+    </div>
+</div>
+
+<script>
+    // Web Audio API for sound effects
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+            osc.frequency.exponentialRampToValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.4);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(130.81, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'click') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
+    }
+
+    // 25 Questions Array
+    const questions = [
+    
+        { sentence: "____ sekiz yaşındayım.", correct: "Ben" },
+        { sentence: "____ sekiz yaşındasın.", correct: "Sen" },
+        { sentence: "____ yedi yaşında.", correct: "O" },
+        { sentence: "____ sekiz yaşındayız.", correct: "Biz" },
+        { sentence: "____ sekiz yaşındasınız.", correct: "Siz" },
+        { sentence: "____ sekiz yaşındalar.", correct: "Onlar" },
+        { sentence: "____ öğrenciyim.", correct: "Ben" },
+        { sentence: "____ öğrencisin.", correct: "Sen" },
+        { sentence: "____ öğrenci.", correct: "O" },
+        { sentence: "____ öğrenciyiz.", correct: "Biz" },
+        { sentence: "____ öğrencisiniz.", correct: "Siz" },
+        { sentence: "____ öğrenciler.", correct: "Onlar" },
+        { sentence: "____ öğretmenim.", correct: "Ben" },
+        { sentence: "____ öğretmensin.", correct: "Sen" },
+        { sentence: "____ öğretmen.", correct: "O" },
+        { sentence: "____ öğretmeniz.", correct: "Biz" },
+        { sentence: "____ öğretmensiniz.", correct: "Siz" },
+        { sentence: "____ öğretmenler.", correct: "Onlar" },
+        { sentence: "____ doktorum.", correct: "Ben" },
+        { sentence: "____ doktorsun.", correct: "Sen" },
+        { sentence: "____ doktorsunuz.", correct: "Siz" },
+        { sentence: "____ doktorlar.", correct: "Onlar" }
+    ];
+
+    // Function to shuffle questions randomly (Fisher-Yates Shuffle)
+    function shuffleQuestions(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Shuffle questions on game load
+    shuffleQuestions(questions);
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= questions.length) {
+            document.getElementById('game').innerHTML = `
+                <h2>🎉 Tebrikler! Oyunu tamamladınız.</h2>
+                <p>Toplam Puanınız: <strong>${score}</strong> / <strong>${questions.length}</strong></p>
+                <button onclick="playSound('click'); location.reload()">Yeniden Başlat 🔄</button>
+            `;
+            return;
+        }
+
+        const q = questions[currentQuestionIndex];
+        document.getElementById('sentence-card').innerText = `${currentQuestionIndex + 1}. ${q.sentence}`;
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        const pronouns = ["Ben", "Sen", "O", "Biz", "Siz", "Onlar"];
+        
+        pronouns.forEach(pronoun => {
+            const btn = document.createElement('button');
+            btn.innerText = pronoun;
+            btn.onclick = () => checkAnswer(pronoun, q.correct);
+            optionsContainer.appendChild(btn);
+        });
+
+        document.getElementById('total-val').innerText = questions.length;
+    }
+
+    function checkAnswer(selected, correct) {
+        const feedbackEl = document.getElementById('feedback');
+        const buttons = document.querySelectorAll('#options-container button');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            playSound('correct');
+            feedbackEl.innerText = "Doğru cevap! Aferin ✨";
+            feedbackEl.className = "feedback correct";
+            score++;
+            document.getElementById('score-val').innerText = score;
+        } else {
+            playSound('wrong');
+            feedbackEl.innerText = `Yanlış cevap! Doğru zamir: (${correct})`;
+            feedbackEl.className = "feedback wrong";
+        }
+
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+
+    function nextQuestion() {
+        playSound('click');
+        currentQuestionIndex++;
+        loadQuestion();
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
