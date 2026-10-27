@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="مشروع okul - صفحة Muhammed Edip Alomer">
+  <meta name="description" content="مشروع okul - ألعاب تعليمية تفاعلية لتعلم التركية - Muhammed Edip Alomer">
   <title>Muhammed Edip Alomer | okul</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -88,7 +88,7 @@
       margin: 0 auto;
     }
 
-    /* ===== شبكة المشاريع ===== */
+    /* ===== شبكة الألعاب ===== */
     .section-title {
       font-size: 1.5rem;
       color: var(--text);
@@ -104,14 +104,28 @@
       margin-bottom: 2.5rem;
     }
 
+    /* ===== البطاقة النصية ===== */
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
-      overflow: hidden;
+      padding: 1.75rem 1.5rem;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       display: flex;
       flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* شريط ملون أعلى البطاقة */
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
     }
 
     .card:hover {
@@ -119,31 +133,32 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
 
-    .card img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      background-color: #f1f5f9;
-    }
-
-    .card-body {
-      padding: 1.25rem;
-      flex: 1;
+    /* أيقونة نصية بدل الصورة */
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background-color: #eff6ff;
+      color: var(--primary);
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
     }
 
-    .card-body h3 {
+    .card h3 {
       font-size: 1.15rem;
       margin-bottom: 0.5rem;
       color: var(--text);
     }
 
-    .card-body p {
+    .card p {
       color: var(--text-light);
       font-size: 0.95rem;
       flex: 1;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
 
     .btn {
@@ -151,7 +166,7 @@
       background-color: var(--primary);
       color: #fff;
       text-decoration: none;
-      padding: 0.6rem 1.25rem;
+      padding: 0.65rem 1.25rem;
       border-radius: 8px;
       font-weight: 600;
       font-size: 0.95rem;
@@ -218,7 +233,7 @@
   <!-- الترويسة -->
   <header>
     <h1>Muhammed Edip Alomer</h1>
-    <p>مشروع okul — أدوات تعليمية تفاعلية</p>
+    <p>مشروع okul — ألعاب تعليمية تفاعلية لتعلم التركية</p>
   </header>
 
   <!-- المحتوى -->
@@ -227,27 +242,38 @@
     <section class="about">
       <h2>مرحباً بك 👋</h2>
       <p>
-        هذه الصفحة الرئيسية لمشروع <strong>okul</strong>، وهو مجموعة من الأدوات
-        التعليمية التفاعلية البسيطة. اختر أحد المشاريع أدناه للبدء.
+        هذه الصفحة الرئيسية لمشروع <strong>okul</strong>، وهو مجموعة من الألعاب
+        التعليمية التفاعلية البسيطة لتعلّم اللغة التركية. اختر إحدى الألعاب أدناه للبدء.
       </p>
     </section>
 
-    <!-- المشاريع -->
-    <h2 class="section-title">المشاريع</h2>
+    <!-- الألعاب -->
+    <h2 class="section-title">الألعاب</h2>
     <div class="projects">
 
-      <!-- لعبة اللغة التركية -->
+      <!-- 1. لعبة ذو زوايا أم دائري -->
       <article class="card">
-        <img src="img/araba.png" alt="صورة سيارة - لعبة اللغة التركية"
-             onerror="this.style.display='none'">
-        <div class="card-body">
-          <h3>لعبة اللغة التركية</h3>
-          <p>لعبة تفاعلية لتعلّم المفردات التركية عبر أسئلة الاختيار بين "Uyuyor" و "Uyumuyor".</p>
-          <a class="btn" href="olumlu_olumsuz_oyun.html">ابدأ اللعبة</a>
-        </div>
+        <div class="card-icon">◻</div>
+        <h3>Köşeli mi Yuvarlak mı?</h3>
+        <p>اختر التصنيف الصحيح لكل مجسم: هل هو ذو زوايا أم دائري؟ لعبة لتعلّم المفردات والأشكال بالتركية.</p>
+        <a class="btn" href="koseli_yuvarlak.html">ابدأ اللعبة</a>
       </article>
 
-      <!-- يمكنك إضافة المزيد من البطاقات هنا بنفس النمط -->
+      <!-- 2. لعبة اللغة التركية -->
+      <article class="card">
+        <div class="card-icon">✓</div>
+        <h3>لعبة اللغة التركية</h3>
+        <p>لعبة تفاعلية لتعلّم المفردات التركية عبر أسئلة الاختيار بين "Uyuyor" و "Uyumuyor".</p>
+        <a class="btn" href="olumlu_olumsuz_oyun.html">ابدأ اللعبة</a>
+      </article>
+
+      <!-- 3. لعبة الضمائر التركية -->
+      <article class="card">
+        <div class="card-icon">🎯</div>
+        <h3>Türkçe Zamirler Oyunu</h3>
+        <p>اختر الضمير المناسب لكل جملة من بين 25 سؤالاً، لتتقن استخدام الضمائر التركية بسهولة.</p>
+        <a class="btn" href="turkce_zamir.html">ابدأ اللعبة</a>
+      </article>
 
     </div>
   </main>
