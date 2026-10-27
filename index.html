@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="مشروع okul - صفحة Muhammed Edip Alomer">
+  <title>Muhammed Edip Alomer | okul</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ===== إعادة ضبط عام ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== الترويسة ===== */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      padding: 3rem 1.5rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    /* ===== الحاوية الرئيسية ===== */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    /* ===== قسم نبذة ===== */
+    .about {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .about h2 {
+      font-size: 1.5rem;
+      color: var(--primary-dark);
+      margin-bottom: 0.75rem;
+    }
+
+    .about p {
+      color: var(--text-light);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* ===== شبكة المشاريع ===== */
+    .section-title {
+      font-size: 1.5rem;
+      color: var(--text);
+      margin-bottom: 1.25rem;
+      padding-right: 0.75rem;
+      border-right: 4px solid var(--accent);
+    }
+
+    .projects {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background-color: #f1f5f9;
+    }
+
+    .card-body {
+      padding: 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-body h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .card-body p {
+      color: var(--text-light);
+      font-size: 0.95rem;
+      flex: 1;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-align: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* ===== التذييل ===== */
+    footer {
+      background-color: var(--text);
+      color: #cbd5e1;
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== التجاوب مع الهاتف ===== */
+    @media (max-width: 600px) {
+      header {
+        padding: 2.2rem 1rem;
+      }
+
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      header p {
+        font-size: 1rem;
+      }
+
+      main {
+        padding: 1.5rem 1rem;
+      }
+
+      .about {
+        padding: 1.5rem 1rem;
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+      }
+
+      .projects {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- الترويسة -->
+  <header>
+    <h1>Muhammed Edip Alomer</h1>
+    <p>مشروع okul — أدوات تعليمية تفاعلية</p>
+  </header>
+
+  <!-- المحتوى -->
+  <main>
+    <!-- نبذة -->
+    <section class="about">
+      <h2>مرحباً بك 👋</h2>
+      <p>
+        هذه الصفحة الرئيسية لمشروع <strong>okul</strong>، وهو مجموعة من الأدوات
+        التعليمية التفاعلية البسيطة. اختر أحد المشاريع أدناه للبدء.
+      </p>
+    </section>
+
+    <!-- المشاريع -->
+    <h2 class="section-title">المشاريع</h2>
+    <div class="projects">
+
+      <!-- لعبة اللغة التركية -->
+      <article class="card">
+        <img src="img/araba.png" alt="صورة سيارة - لعبة اللغة التركية"
+             onerror="this.style.display='none'">
+        <div class="card-body">
+          <h3>لعبة اللغة التركية</h3>
+          <p>لعبة تفاعلية لتعلّم المفردات التركية عبر أسئلة الاختيار بين "Uyuyor" و "Uyumuyor".</p>
+          <a class="btn" href="olumlu_olumsuz_oyun.html">ابدأ اللعبة</a>
+        </div>
+      </article>
+
+      <!-- يمكنك إضافة المزيد من البطاقات هنا بنفس النمط -->
+
+    </div>
+  </main>
+
+  <!-- التذييل -->
+  <footer>
+    <p>&copy; 2026 Muhammed Edip Alomer — جميع الحقوق محفوظة</p>
+    <p>
+      <a href="https://github.com/mhmd199611/okul" target="_blank" rel="noopener">عرض المستودع على GitHub</a>
+    </p>
+  </footer>
+
+</body>
+</html>
