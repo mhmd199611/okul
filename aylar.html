@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aylar: Dinle ve Bul</title>
+  <style>
+    :root {
+      --primary: #4A90E2;
+      --secondary: #50E3C2;
+      --success: #2ECC71;
+      --error: #E74C3C;
+      --bg: #F0F4F8;
+      --card-bg: #FFFFFF;
+      --text: #2C3E50;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .game-container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 500px;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      margin: 0 0 10px 0;
+      color: var(--primary);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .progress-bar {
+      height: 12px;
+      background: #E2E8F0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .audio-card {
+      background: #EBF5FF;
+      border: 3px dashed var(--primary);
+      border-radius: 20px;
+      padding: 25px 15px;
+      margin-bottom: 25px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .audio-card:active {
+      transform: scale(0.97);
+    }
+
+    .speaker-btn {
+      width: 75px;
+      height: 75px;
+      background: var(--primary);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 2.2rem;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(74, 144, 226, 0.4);
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .option-btn {
+      background: #F8FAFC;
+      border: 2px solid #CBD5E1;
+      border-radius: 16px;
+      padding: 18px 10px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn.correct {
+      background: var(--success) !important;
+      color: white !important;
+      border-color: var(--success) !important;
+    }
+
+    .option-btn.wrong {
+      background: var(--error) !important;
+      color: white !important;
+      border-color: var(--error) !important;
+    }
+
+    .next-btn, .start-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 15px 35px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #quiz-screen, .end-screen {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    
+    <!-- الشاشة الافتتاحية -->
+    <div class="start-screen" id="start-screen">
+      <div style="font-size: 4rem; margin-bottom: 15px;">🔊📅</div>
+      <h1 style="color: var(--primary);">Aylar: Dinle ve Bul</h1>
+      <p style="color: #64748B; margin-bottom: 30px; font-weight: 500;">
+        Sesleri dinleyerek doğru ayı bulun!
+      </p>
+      <button class="start-btn" onclick="startGame()">Oyuna Başla ➔</button>
+    </div>
+
+    <!-- شاشة الأسئلة -->
+    <div id="quiz-screen">
+      <header>
+        <h1>📅 Aylar: Dinle ve Bul</h1>
+      </header>
+
+      <div class="stats">
+        <span id="question-count">Soru: 1/12</span>
+        <span id="score">Puan: 0</span>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress"></div>
+      </div>
+
+      <div class="audio-card" onclick="playCurrentAudio()">
+        <button class="speaker-btn">🔊</button>
+        <div style="color: #64748B; font-weight: 600;">Tekrar dinlemek için tıkla</div>
+      </div>
+
+      <div class="options-grid" id="options"></div>
+      <div id="action-area" style="min-height: 50px;"></div>
+    </div>
+
+    <!-- شاشة النهاية -->
+    <div class="end-screen" id="end-screen">
+      <div style="font-size: 4rem;">🏆</div>
+      <h2>Tebrikler!</h2>
+      <p id="final-score" style="font-size: 1.3rem; margin: 15px 0;"></p>
+      <button class="start-btn" style="background: var(--success);" onclick="startGame()">Tekrar Oyna</button>
+    </div>
+
+  </div>
+
+  <script>
+    const months = [
+      "Ocak", "Şubat", "Mart", "Nisan", 
+      "Mayıs", "Haziran", "Temmuz", "Ağustos", 
+      "Eylül", "Ekim", "Kasım", "Aralık"
+    ];
+
+    // مسارات الصوت المحلية من مجلد audio
+    const audioFiles = {
+      "Ocak": "audio/Ocak.mp3",
+      "Şubat": "audio/Subat.mp3",
+      "Mart": "audio/Mart.mp3",
+      "Nisan": "audio/Nisan.mp3",
+      "Mayıs": "audio/Mayis.mp3",
+      "Haziran": "audio/Haziran.mp3",
+      "Temmuz": "audio/Temmuz.mp3",
+      "Ağustos": "audio/Agustos.mp3",
+      "Eylül": "audio/Eylul.mp3",
+      "Ekim": "audio/Ekim.mp3",
+      "Kasım": "audio/Kasim.mp3",
+      "Aralık": "audio/Aralik.mp3"
+    };
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let currentAudio = null;
+
+    function startGame() {
+      currentQuestions = [...months].sort(() => Math.random() - 0.5);
+      currentIndex = 0;
+      score = 0;
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('quiz-screen').style.display = 'block';
+      document.getElementById('end-screen').style.display = 'none';
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      answered = false;
+      document.getElementById('action-area').innerHTML = '';
+      
+      const currentMonth = currentQuestions[currentIndex];
+      
+      document.getElementById('question-count').innerText = `Soru: ${currentIndex + 1}/${currentQuestions.length}`;
+      document.getElementById('score').innerText = `Puan: ${score}`;
+      document.getElementById('progress').style.width = `${(currentIndex / currentQuestions.length) * 100}%`;
+
+      let wrongOptions = months.filter(m => m !== currentMonth).sort(() => Math.random() - 0.5).slice(0, 3);
+      let options = [currentMonth, ...wrongOptions].sort(() => Math.random() - 0.5);
+
+      const optionsGrid = document.getElementById('options');
+      optionsGrid.innerHTML = '';
+
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(btn, opt, currentMonth);
+        optionsGrid.appendChild(btn);
+      });
+
+      // تشغيل ملف الصوت الخاص بالشهر الحالي تلقائياً
+      playCurrentAudio();
+    }
+
+    function playCurrentAudio() {
+      const currentMonth = currentQuestions[currentIndex];
+      const audioPath = audioFiles[currentMonth];
+
+      if (currentAudio) {
+        currentAudio.pause();
+      }
+
+      currentAudio = new Audio(audioPath);
+      currentAudio.play().catch(e => console.log("Audio autoplay prevented:", e));
+    }
+
+    function checkAnswer(selectedBtn, selectedValue, correctValue) {
+      if (answered) return;
+
+      const buttons = document.querySelectorAll('.option-btn');
+
+      if (selectedValue === correctValue) {
+        answered = true;
+        selectedBtn.classList.add('correct');
+        score += 10;
+        document.getElementById('score').innerText = `Puan: ${score}`;
+
+        setTimeout(() => {
+          currentIndex++;
+          if (currentIndex < currentQuestions.length) {
+            loadQuestion();
+          } else {
+            showEndScreen();
+          }
+        }, 1200);
+
+      } else {
+        selectedBtn.classList.add('wrong');
+        buttons.forEach(btn => {
+          if (btn.innerText === correctValue) {
+            btn.classList.add('correct');
+          }
+        });
+
+        document.getElementById('action-area').innerHTML = `
+          <button class="next-btn" onclick="nextQuestion()">Sonraki Soru ➔</button>
+        `;
+        answered = true;
+      }
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < currentQuestions.length) {
+        loadQuestion();
+      } else {
+        showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('end-screen').style.display = 'block';
+      document.getElementById('final-score').innerText = `Toplam Puanınız: ${score} / ${currentQuestions.length * 10}`;
+    }
+  </script>
+</body>
+</html>
