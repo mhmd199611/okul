@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>علامات الترقيم: العب وتعلّم</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #4ea8de 0%, #5e60ce 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            direction: rtl;
+        }
+
+        .container {
+            width: 94%;
+            max-width: 650px;
+            height: 92dvh;
+            max-height: 800px;
+            background: #ffffff;
+            border-radius: clamp(16px, 4vw, 28px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(14px, 2.5vh, 24px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* شاشة البداية */
+        #start-screen {
+            justify-content: center;
+            gap: clamp(15px, 3vh, 30px);
+        }
+
+        .game-title {
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            color: #480ca8;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .game-desc {
+            font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+            color: #495057;
+            line-height: 1.6;
+            max-width: 85%;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #ff70a6 0%, #ff9770 100%);
+            color: white;
+            border: none;
+            padding: clamp(12px, 2.5vh, 18px) clamp(28px, 6vw, 45px);
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 112, 166, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-main:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 10px rgba(255, 112, 166, 0.4);
+        }
+
+        /* شاشة اللعبة */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            font-size: clamp(1rem, 3.2vw, 1.3rem);
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        .score-badge {
+            background: #e7c6ff;
+            color: #4a154b;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        .question-badge {
+            background: #b9fbc0;
+            color: #1b4332;
+            padding: 6px 14px;
+            border-radius: 20px;
+        }
+
+        .question-box {
+            width: 100%;
+            background: #f1f3f5;
+            border: 3px dashed #7209b7;
+            border-radius: 20px;
+            padding: clamp(16px, 3vh, 28px) clamp(12px, 3vw, 20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: clamp(120px, 22vh, 180px);
+        }
+
+        .sentence-text {
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            color: #212529;
+            font-weight: bold;
+            line-height: 1.8;
+            word-wrap: break-word;
+        }
+
+        .slot {
+            display: inline-block;
+            width: clamp(45px, 10vw, 65px);
+            height: clamp(45px, 10vw, 65px);
+            line-height: clamp(40px, 9.5vw, 60px);
+            background: #ffffff;
+            border: 3px solid #7209b7;
+            border-radius: 50%;
+            text-align: center;
+            color: #f72585;
+            font-weight: bold;
+            margin: 0 6px;
+            vertical-align: middle;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .slot.filled {
+            background: #7209b7;
+            color: #ffffff;
+            border-color: #7209b7;
+        }
+
+        .options-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: clamp(15px, 5vw, 35px);
+            margin: clamp(10px, 2vh, 20px) 0;
+        }
+
+        .option-card {
+            width: clamp(95px, 26vw, 135px);
+            height: clamp(95px, 26vw, 135px);
+            border-radius: 50%;
+            background: #ffffff;
+            border: 4px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .option-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .option-symbol {
+            font-size: clamp(2.6rem, 8vw, 3.8rem);
+            font-weight: 900;
+            color: #3a0ca3;
+            line-height: 1;
+        }
+
+        .option-name {
+            font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+            color: #6c757d;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        /* تفاعلات الإجابات */
+        .option-card.correct {
+            border-color: #2ec4b6 !important;
+            background: #e6fffa !important;
+            box-shadow: 0 0 25px rgba(46, 196, 182, 0.6) !important;
+            transform: scale(1.08) !important;
+        }
+
+        .option-card.wrong {
+            border-color: #e63946 !important;
+            background: #ffe3e3 !important;
+            box-shadow: 0 0 20px rgba(230, 57, 70, 0.5) !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .option-card.highlight-correct {
+            border-color: #2ec4b6 !important;
+            background: #e6fffa !important;
+            box-shadow: 0 0 20px rgba(46, 196, 182, 0.5) !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .feedback-banner {
+            min-height: clamp(40px, 7vh, 55px);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.05rem, 3.4vw, 1.35rem);
+            font-weight: bold;
+            border-radius: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            padding: 6px 12px;
+        }
+
+        .feedback-banner.show {
+            opacity: 1;
+        }
+
+        .feedback-banner.correct-bg {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .feedback-banner.wrong-bg {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-next {
+            background: #4361ee;
+            color: white;
+            border: none;
+            padding: clamp(10px, 2vh, 14px) clamp(24px, 5vw, 36px);
+            font-size: clamp(1.1rem, 3.2vw, 1.4rem);
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+            visibility: hidden;
+        }
+
+        .btn-next.visible {
+            visibility: visible;
+        }
+
+        /* شاشة النهاية */
+        #end-screen {
+            justify-content: center;
+            gap: clamp(15px, 3vh, 25px);
+        }
+
+        .trophy {
+            font-size: clamp(4rem, 12vw, 6.5rem);
+            animation: bounce 1.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-15px); }
+        }
+
+        .end-score {
+            font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+            color: #2b2d42;
+            font-weight: 800;
+        }
+
+        .end-message {
+            font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+            color: #4a4e69;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen">
+            <h1 class="game-title">علامات الترقيم<br>✏️ العب وتعلّم ✏️</h1>
+            <p class="game-desc">
+                تدرّب على اختيار علامة الترقيم المناسبة: <b>الفاصلة ( ، )</b> أو <b>النقطة ( . )</b> لإكمال الجمل بشكل صحيح!
+            </p>
+            <button class="btn-main" onclick="startGame()">ابدأ اللعب 🚀</button>
+        </div>
+
+        <!-- شاشة اللعبة -->
+        <div id="game-screen" class="screen hidden">
+            <div class="header">
+                <span class="question-badge" id="question-progress">السؤال: 1 / 10</span>
+                <span class="score-badge" id="score-display">النتيجة: 0</span>
+            </div>
+
+            <div class="question-box">
+                <div class="sentence-text" id="sentence-container">
+                    <!-- يتم عرض الجملة هنا -->
+                </div>
+            </div>
+
+            <div class="options-container" id="options-container">
+                <!-- أزرار اختيار العلامة -->
+            </div>
+
+            <div class="feedback-banner" id="feedback-banner"></div>
+
+            <button class="btn-next" id="btn-next" onclick="nextQuestion()">السؤال التالي ➔</button>
+        </div>
+
+        <!-- شاشة النهاية -->
+        <div id="end-screen" class="screen hidden">
+            <div class="trophy">🏆</div>
+            <h2 class="game-title">أحسنت يا بطل!</h2>
+            <div class="end-score" id="final-score">نتيجتك: 10 / 10</div>
+            <div class="end-message" id="final-message">أنت رائع في استخدام علامات الترقيم!</div>
+            <button class="btn-main" onclick="restartGame()">إعادة اللعب 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        // بنك الأسئلة والمبني على تدريبات بطاقة الترقيم
+        const questionsBank = [
+            {
+                part1: "أقرأُ دُروسي",
+                part2: "وأكتبُ وَظائفي",
+                correct: "،",
+                explanation: "الفاصلة تُوضع بين الجمل المعطوفة والمترابطة."
+            },
+            {
+                part1: "أكتبُ وَظائفي",
+                part2: "فأبقى مُتَفَوِّقاً",
+                correct: "،",
+                explanation: "الفاصلة تُوضع بين أجزاء الكلام المتتابعة."
+            },
+            {
+                part1: "أحب أن أبقى مُتَفَوِّقاً",
+                part2: "",
+                correct: ".",
+                explanation: "النقطة تُوضع في نهاية الجملة عند تمام المعنى."
+            },
+            {
+                part1: "هَبّتْ عاصِفةٌ قَوِيّةٌ",
+                part2: "فَهَزّتْ شَجَرَةَ الزَّيْتونِ",
+                correct: "،",
+                explanation: "الفاصلة تفصل بين جملتين مرتبطتين في المعنى."
+            },
+            {
+                part1: "سَقَطَ المَطَرُ",
+                part2: "",
+                correct: ".",
+                explanation: "النقطة تُوضع عند الختام وتمام الفكرة."
+            },
+            {
+                part1: "قَطَفَتْ ثَمارَ الزَّيْتونِ",
+                part2: "ثُمَّ وَضَعَتْها في سَلَّةٍ",
+                correct: "،",
+                explanation: "الفاصلة تُوضع قبل حروف العطف مثل (ثُمَّ)."
+            },
+            {
+                part1: "أَشْرَقَتِ الشَّمْسُ",
+                part2: "",
+                correct: ".",
+                explanation: "النقطة تُكتب عند اكتمال الجملة ونهايتها."
+            },
+            {
+                part1: "العِلْمُ نُورٌ",
+                part2: "وَالجَهْلُ ظَلامٌ",
+                correct: "،",
+                explanation: "الفاصلة تفصل بين الجمل القصيرة المعطوفة."
+            },
+            {
+                part1: "تَفَتَّحَتِ الأَزْهارُ",
+                part2: "",
+                correct: ".",
+                explanation: "النقطة تُوضع في نهاية الكلام التام."
+            },
+            {
+                part1: "أَكْمَلَ الطَّالِبُ وَاجِبَاتِهِ",
+                part2: "ثُمَّ ذَهَبَ لِلَّعِبِ",
+                correct: "،",
+                explanation: "الفاصلة تُوضع بين الجمل المتصلة المعنى."
+            },
+            {
+               part1: "غَرَّدَ العُصْفُورُ",
+                part2: "",
+                correct: ".",
+                explanation: "النقطة تُوضع في نهاية الجملة المستقلة."
+            },
+            {
+                part1: "يَسْعَى المُجْتَهِدُ لِلنَّجَاحِ",
+                part2: "",
+                correct: ".",
+                explanation: "تُوضع النقطة عند نهاية المعنى والختام."
+            }
+        ];
+
+        let currentRoundQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        // نظام الأصوات المدمج عبر Web Audio API (دون ملفات خارجية)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playCorrectSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, now); // C5
+            osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.1); // E5
+            osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.2); // G5
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        }
+
+        function playWrongSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, now); // A3
+            osc.frequency.exponentialRampToValueAtTime(130.81, now + 0.25); // C3
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        }
+
+        function startGame() {
+            initAudio();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            // اختيارات عشوائية لـ 10 أسئلة لكل جولة
+            currentRoundQuestions = [...questionsBank].sort(() => 0.5 - Math.random()).slice(0, 10);
+            currentIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            const q = currentRoundQuestions[currentIndex];
+            
+            document.getElementById('question-progress').innerText = `السؤال: ${currentIndex + 1} / 10`;
+            document.getElementById('score-display').innerText = `النتيجة: ${score}`;
+
+            const sentenceContainer = document.getElementById('sentence-container');
+            if (q.part2) {
+                sentenceContainer.innerHTML = `${q.part1} <span class="slot" id="slot-mark">؟</span> ${q.part2}`;
+            } else {
+                sentenceContainer.innerHTML = `${q.part1} <span class="slot" id="slot-mark">؟</span>`;
+            }
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const options = [
+                { symbol: '،', name: 'فاصلة' },
+                { symbol: '.', name: 'نقطة' }
+            ].sort(() => 0.5 - Math.random());
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.dataset.symbol = opt.symbol;
+                card.onclick = () => checkAnswer(opt.symbol, card);
+                card.innerHTML = `
+                    <span class="option-symbol">${opt.symbol}</span>
+                    <span class="option-name">${opt.name}</span>
+                `;
+                optionsContainer.appendChild(card);
+            });
+
+            const feedback = document.getElementById('feedback-banner');
+            feedback.className = 'feedback-banner';
+            feedback.innerText = '';
+
+            const btnNext = document.getElementById('btn-next');
+            btnNext.classList.remove('visible');
+        }
+
+        function checkAnswer(selectedSymbol, selectedCard) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const q = currentRoundQuestions[currentIndex];
+            const isCorrect = selectedSymbol === q.correct;
+
+            const slot = document.getElementById('slot-mark');
+            slot.innerText = selectedSymbol;
+            slot.classList.add('filled');
+
+            const feedback = document.getElementById('feedback-banner');
+            const allCards = document.querySelectorAll('.option-card');
+
+            if (isCorrect) {
+                score++;
+                document.getElementById('score-display').innerText = `النتيجة: ${score}`;
+                selectedCard.classList.add('correct');
+                playCorrectSound();
+
+                feedback.innerText = 'إجابة صحيحة! أحسنت 👏';
+                feedback.className = 'feedback-banner show correct-bg';
+
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1200);
+
+            } else {
+                selectedCard.classList.add('wrong');
+                playWrongSound();
+
+                allCards.forEach(card => {
+                    if (card.dataset.symbol === q.correct) {
+                        card.classList.add('highlight-correct');
+                    }
+                });
+
+                feedback.innerText = `إجابة خاطئة! ${q.explanation}`;
+                feedback.className = 'feedback-banner show wrong-bg';
+
+                document.getElementById('btn-next').classList.add('visible');
+            }
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+            if (currentIndex < 10) {
+                loadQuestion();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+
+            document.getElementById('final-score').innerText = `نتيجتك: ${score} / 10`;
+            const msgEl = document.getElementById('final-message');
+
+            if (score === 10) {
+                msgEl.innerText = 'ممتاز جداً! أنت بطل الترقيم بلا منازع! 🌟🏆';
+            } else if (score >= 7) {
+                msgEl.innerText = 'أحسنت! إجاباتك رائعة ومعرفتك ممتازة! 👍✨';
+            } else if (score >= 5) {
+                msgEl.innerText = 'جيد! واصل التدرب وستصبح أفضل دائماً! 💪';
+            } else {
+                msgEl.innerText = 'حاول مرة أخرى لتتقن علامات الترقيم بشكل ممتاز! 🎯';
+            }
+        }
+
+        function restartGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
