@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renkler: Oyna ve Öğren</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background: linear-gradient(135deg, #A8EDEA 0%, #FED6E3 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Animations */
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow {
+            animation: bounce-slow 2s infinite;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.05); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-12px); }
+            40%, 80% { transform: translateX(12px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+            70% { transform: scale(1.03); box-shadow: 0 0 0 20px rgba(74, 222, 128, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        }
+        .animate-pulse-green {
+            animation: pulse-ring 1s infinite;
+        }
+
+        /* Color Circle Custom Shadow & Styles */
+        .color-blob {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .color-blob:hover:not(:disabled) {
+            transform: scale(1.08) translateY(-4px);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.25);
+        }
+        .color-blob:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 4px solid rgba(255, 255, 255, 0.9);
+        }
+
+        /* Confetti piece styling */
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            animation: fall 3s ease-in infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen w-screen p-2 sm:p-4 overflow-hidden">
+
+    <!-- Container Main -->
+    <div class="w-full max-w-md max-h-[98vh] flex flex-col justify-center">
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="glass-card rounded-3xl p-5 text-center shadow-2xl animate-pop my-auto">
+            <div class="text-5xl sm:text-6xl mb-2 animate-bounce-slow inline-block">🎨</div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-1 tracking-wide">
+                Renkler
+            </h1>
+            <h2 class="text-lg sm:text-xl font-semibold text-pink-500 mb-4">
+                Oyna ve Öğren!
+            </h2>
+            <p class="text-gray-600 mb-6 text-sm sm:text-base font-medium">
+                Türkçe renkleri eğlenceli ve kolay bir şekilde öğrenmeye hazır mısın?
+            </p>
+            <button id="start-btn" class="w-full py-3.5 px-6 bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white text-xl font-bold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 border-b-4 border-emerald-700">
+                Oyuna Başla 🚀
+            </button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="glass-card rounded-3xl p-4 sm:p-5 shadow-2xl hidden my-auto flex flex-col justify-between">
+            <!-- Header Info -->
+            <div class="flex justify-between items-center mb-3">
+                <!-- Progress -->
+                <div class="flex items-center space-x-1.5 bg-white/80 px-3 py-1 rounded-xl shadow-sm border border-white">
+                    <span class="text-base">📊</span>
+                    <span id="question-number" class="text-sm font-bold text-gray-700">Soru 1 / 10</span>
+                </div>
+                <!-- Score -->
+                <div class="flex items-center space-x-1.5 bg-amber-100 px-3 py-1 rounded-xl border-2 border-amber-300 shadow-sm">
+                    <span class="text-base">⭐</span>
+                    <span id="score-text" class="text-base font-bold text-amber-700">Puan: 0</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-200/80 rounded-full h-2.5 mb-4 overflow-hidden p-0.5 border border-white">
+                <div id="progress-bar" class="bg-gradient-to-r from-pink-400 to-purple-500 h-full rounded-full transition-all duration-300" style="width: 10%"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="text-center mb-4">
+                <span class="text-xs font-bold tracking-wider text-purple-600 uppercase bg-purple-100 px-3 py-1 rounded-full inline-block mb-2 border border-purple-200">
+                    Bu hangi renk?
+                </span>
+                <div class="bg-white/90 py-3.5 px-3 rounded-2xl shadow-inner border border-purple-100">
+                    <h2 id="color-word" class="text-3xl sm:text-4xl font-black text-gray-800 tracking-wider">
+                        Kırmızı
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Color Options Grid (Compact size) -->
+            <div id="options-grid" class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 max-w-[320px] sm:max-w-[360px] mx-auto w-full">
+                <!-- 4 Color circles dynamically added -->
+            </div>
+
+            <!-- Feedback & Next Button Area -->
+            <div id="feedback-area" class="h-12 flex items-center justify-center text-center">
+                <div id="encouragement-text" class="text-xl font-bold hidden"></div>
+                <button id="next-btn" class="hidden py-2.5 px-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-base font-bold rounded-xl shadow-lg border-b-4 border-indigo-800 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center space-x-2">
+                    <span>Sonraki Soru</span>
+                    <span>➔</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- END SCREEN -->
+        <div id="end-screen" class="glass-card rounded-3xl p-5 text-center shadow-2xl hidden relative overflow-hidden animate-pop my-auto">
+            <div id="confetti-container" class="absolute inset-0 pointer-events-none"></div>
+
+            <div class="text-5xl sm:text-6xl mb-2 animate-bounce-slow inline-block">🏆</div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
+                Tebrikler!
+            </h2>
+            <p class="text-sm text-gray-600 mb-4 font-medium">
+                Oyunu Harika Bir Şekilde Tamamladın!
+            </p>
+
+            <!-- Stars display -->
+            <div id="stars-display" class="flex justify-center space-x-2 text-3xl mb-4">
+                <span>⭐</span><span>⭐</span><span>⭐</span>
+            </div>
+
+            <!-- Score Summary Box -->
+            <div class="bg-white/90 rounded-2xl p-4 mb-5 shadow-inner border border-white">
+                <p class="text-gray-500 text-xs mb-0.5 font-semibold">Toplam Puanın</p>
+                <p id="final-score" class="text-4xl font-black text-purple-600">10 / 10</p>
+                <p id="final-message" class="text-emerald-600 font-bold mt-1 text-base">Mükemmel Skor! 🎉</p>
+            </div>
+
+            <button id="restart-btn" class="w-full py-3.5 px-6 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-xl font-bold rounded-2xl shadow-lg border-b-4 border-purple-800 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                Tekrar Oyna 🔄
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. COLOR DATA LIST ---
+        const COLORS = [
+            { name: 'mavi', tr: 'Mavi', hex: '#1E88E5', border: '#1565C0' },
+            { name: 'kırmızı', tr: 'Kırmızı', hex: '#E53935', border: '#C62828' },
+            { name: 'sarı', tr: 'Sarı', hex: '#FDD835', border: '#FBC02D' },
+            { name: 'yeşil', tr: 'Yeşil', hex: '#43A047', border: '#2E7D32' },
+            { name: 'pembe', tr: 'Pembe', hex: '#F06292', border: '#D81B60' },
+            { name: 'gri', tr: 'Gri', hex: '#78909C', border: '#546E7A' },
+            { name: 'mor', tr: 'Mor', hex: '#8E24AA', border: '#6A1B9A' },
+            { name: 'kahverengi', tr: 'Kahverengi', hex: '#6D4C41', border: '#4E342E' },
+            { name: 'turuncu', tr: 'Turuncu', hex: '#FB8C00', border: '#EF6C00' },
+            { name: 'siyah', tr: 'Siyah', hex: '#212121', border: '#000000' },
+            { name: 'lacivert', tr: 'Lacivert', hex: '#1A237E', border: '#0D47A1' },
+            { name: 'beyaz', tr: 'Beyaz', hex: '#FFFFFF', border: '#D1D5DB' }
+        ];
+
+        // --- 2. GAME STATE VARIABLES ---
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+        const TOTAL_QUESTIONS = 10;
+
+        // --- 3. WEB AUDIO API SOUND SYSTEM ---
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Happy Chime Sound (Correct Answer)
+        function playCorrectSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            
+            // Oscillator 1 (High Arpeggio)
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.type = 'triangle';
+            osc1.frequency.setValueAtTime(523.25, now); // C5
+            osc1.frequency.setValueAtTime(659.25, now + 0.1); // E5
+            osc1.frequency.setValueAtTime(783.99, now + 0.2); // G5
+            osc1.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+
+            gain1.gain.setValueAtTime(0, now);
+            gain1.gain.linearRampToValueAtTime(0.2, now + 0.05);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.6);
+        }
+
+        // Gentle Buzz/Bounce Sound (Wrong Answer)
+        function playWrongSound() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(220, now); // A3
+            osc.frequency.linearRampToValueAtTime(130, now + 0.25); // Pitch bend down
+
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        }
+
+        // --- 4. DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const colorWordEl = document.getElementById('color-word');
+        const optionsGridEl = document.getElementById('options-grid');
+        const questionNumberEl = document.getElementById('question-number');
+        const scoreTextEl = document.getElementById('score-text');
+        const progressBarEl = document.getElementById('progress-bar');
+        const encouragementTextEl = document.getElementById('encouragement-text');
+
+        // --- 5. GAME LOGIC ---
+
+        // Start Game
+        startBtn.addEventListener('click', () => {
+            initAudio();
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            startNewGame();
+        });
+
+        // Restart Game
+        restartBtn.addEventListener('click', () => {
+            initAudio();
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            startNewGame();
+        });
+
+        // Next Question Button
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < TOTAL_QUESTIONS) {
+                loadQuestion();
+            } else {
+                showEndScreen();
+            }
+        });
+
+        function startNewGame() {
+            score = 0;
+            currentQuestionIndex = 0;
+            updateScoreUI();
+            
+            // Generate 10 randomized questions from COLORS pool
+            currentQuestions = shuffleArray([...COLORS]).slice(0, TOTAL_QUESTIONS);
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            nextBtn.classList.add('hidden');
+            encouragementTextEl.classList.add('hidden');
+            encouragementTextEl.className = 'text-2xl font-bold hidden';
+
+            const currentTarget = currentQuestions[currentQuestionIndex];
+
+            // UI Header Updates
+            questionNumberEl.textContent = `Soru ${currentQuestionIndex + 1} / ${TOTAL_QUESTIONS}`;
+            progressBarEl.style.width = `${((currentQuestionIndex + 1) / TOTAL_QUESTIONS) * 100}%`;
+            colorWordEl.textContent = currentTarget.tr;
+
+            // Generate 4 Options (Target + 3 Random Distractors)
+            const distractors = COLORS.filter(c => c.name !== currentTarget.name);
+            const selectedDistractors = shuffleArray(distractors).slice(0, 3);
+            const options = shuffleArray([currentTarget, ...selectedDistractors]);
+
+            // Render Option Circles
+            optionsGridEl.innerHTML = '';
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = `color-blob w-full aspect-square max-h-[110px] rounded-2xl flex items-center justify-center relative border-4 cursor-pointer focus:outline-none focus:ring-4 focus:ring-purple-300`;
+                btn.style.backgroundColor = option.hex;
+                btn.style.borderColor = option.border;
+
+                // Add subtle inner highlight/shadow for 3D realism
+                const innerGlow = document.createElement('div');
+                innerGlow.className = "w-full h-full rounded-xl opacity-20 bg-gradient-to-br from-white to-black pointer-events-none";
+                btn.appendChild(innerGlow);
+
+                // Contrast ring for white/bright colors
+                if (option.name === 'beyaz') {
+                    btn.innerHTML += `<div class="absolute inset-0 rounded-xl border border-gray-300 pointer-events-none"></div>`;
+                }
+
+                btn.dataset.colorName = option.name;
+                btn.addEventListener('click', () => handleAnswer(option, currentTarget, btn));
+                optionsGridEl.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedOption, correctOption, clickedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const buttons = optionsGridEl.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            const isCorrect = selectedOption.name === correctOption.name;
+
+            if (isCorrect) {
+                // Correct Choice
+                playCorrectSound();
+                score++;
+                updateScoreUI();
+
+                // Style Correct Button
+                clickedBtn.classList.add('animate-pulse-green', 'ring-4', 'ring-green-400');
+                clickedBtn.style.borderColor = '#22C55E';
+
+                // Encouragement Text
+                const compliments = ["Harika! 🌟", "Süper! 🎉", "Çok İyi! 👏", "Aferin! 🎈", "Mükemmel! 🚀"];
+                const randomCompliment = compliments[Math.floor(Math.random() * compliments.length)];
+                
+                encouragementTextEl.textContent = randomCompliment;
+                encouragementTextEl.className = 'text-2xl font-extrabold text-emerald-600 animate-pop block';
+
+                // Auto Advance after 1.2s
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < TOTAL_QUESTIONS) {
+                        loadQuestion();
+                    } else {
+                        showEndScreen();
+                    }
+                }, 1200);
+
+            } else {
+                // Incorrect Choice
+                playWrongSound();
+
+                // Highlight Correct Button in Green
+                buttons.forEach(b => {
+                    if (b.dataset.colorName === correctOption.name) {
+                        b.classList.add('ring-4', 'ring-green-400', 'scale-105');
+                        b.style.borderColor = '#22C55E';
+                    }
+                });
+
+                // Highlight Wrong Button in Red with Shake
+                clickedBtn.classList.add('animate-shake', 'ring-4', 'ring-red-500');
+                clickedBtn.style.borderColor = '#EF4444';
+
+                // Encouragement & Manual Next Button
+                encouragementTextEl.textContent = "Tekrar Dene! 💪";
+                encouragementTextEl.className = 'text-lg font-bold text-amber-600 block mr-2';
+                nextBtn.classList.remove('hidden');
+            }
+        }
+
+        function updateScoreUI() {
+            scoreTextEl.textContent = `Puan: ${score}`;
+        }
+
+        function showEndScreen() {
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+
+            const finalScoreEl = document.getElementById('final-score');
+            const finalMessageEl = document.getElementById('final-message');
+            const starsDisplayEl = document.getElementById('stars-display');
+
+            finalScoreEl.textContent = `${score} / ${TOTAL_QUESTIONS}`;
+
+            // Rating Stars & Messages
+            if (score === 10) {
+                starsDisplayEl.innerHTML = '⭐ ⭐ ⭐';
+                finalMessageEl.textContent = 'Mükemmel! Bütün renkleri doğru bildin! 🎉';
+                finalMessageEl.className = 'text-emerald-600 font-bold mt-2 text-xl';
+                createConfetti();
+            } else if (score >= 7) {
+                starsDisplayEl.innerHTML = '⭐ ⭐ ⚪';
+                finalMessageEl.textContent = 'Çok İyi İş Çıkardın! 👏';
+                finalMessageEl.className = 'text-blue-600 font-bold mt-2 text-xl';
+            } else if (score >= 4) {
+                starsDisplayEl.innerHTML = '⭐ ⚪ ⚪';
+                finalMessageEl.textContent = 'Güzel Deneme! Biraz daha pratik yapabilirsin! 😊';
+                finalMessageEl.className = 'text-amber-600 font-bold mt-2 text-xl';
+            } else {
+                starsDisplayEl.innerHTML = '⚪ ⚪ ⚪';
+                finalMessageEl.textContent = 'Hadi bir kez daha deneyelim! 💪';
+                finalMessageEl.className = 'text-purple-600 font-bold mt-2 text-xl';
+            }
+        }
+
+        // --- 6. UTILITY FUNCTIONS ---
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function createConfetti() {
+            const container = document.getElementById('confetti-container');
+            container.innerHTML = '';
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+            
+            for (let i = 0; i < 40; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(confetti);
+            }
+        }
+    </script>
+</body>
+</html>
