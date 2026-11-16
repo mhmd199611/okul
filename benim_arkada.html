@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Benim Arkadaşım - Konuşma Oyunu</title>
+    <!-- Tasarım için Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Türkçe karakterleri destekleyen çocuk dostu yazı tipleri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============================================================
+           TAM EKRAN KAYDIRMASIZ (ZERO-SCROLL) TEMEL YERLEŞİM
+           ============================================================ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
+            font-family: 'Nunito', 'Quicksand', sans-serif;
+            background-color: #FFFDF5;
+            background-image:
+                radial-gradient(circle at 10% 15%, rgba(56, 189, 248, 0.16) 0%, transparent 30%),
+                radial-gradient(circle at 90% 85%, rgba(250, 204, 21, 0.2) 0%, transparent 32%),
+                radial-gradient(circle at 85% 12%, rgba(249, 115, 22, 0.14) 0%, transparent 26%);
+            user-select: none;
+            color: #1e293b;
+        }
+
+        /* Ana uygulama konteyneri: Tam görünüm alanını (100dvh) doldurur */
+        #oyun-kapsayici {
+            width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: clamp(4px, 1dvh, 12px) clamp(6px, 1.2vw, 16px);
+            gap: clamp(4px, 0.9dvh, 10px);
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           ÜST KONTROL ÇUBUĞU VE 25 NUMARALI KART SEÇİCİ
+           ============================================================ */
+        .ust-panel {
+            flex-shrink: 0;
+            background: #ffffff;
+            border: clamp(2px, 0.35dvh, 3px) solid #38bdf8;
+            border-radius: clamp(12px, 1.8dvh, 20px);
+            padding: clamp(4px, 0.8dvh, 10px) clamp(8px, 1.2vw, 14px);
+            box-shadow: 0 4px 12px -2px rgba(2, 132, 199, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(4px, 0.7dvh, 8px);
+        }
+
+        .ust-bilgi-satiri {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .oyun-baslik {
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: clamp(0.95rem, 2.1vw, 1.45rem);
+            color: #0c4a6e;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .oyun-alt-baslik {
+            font-size: clamp(0.68rem, 1.1vw, 0.85rem);
+            font-weight: 800;
+            color: #ea580c;
+            line-height: 1.1;
+        }
+
+        /* 25 Numaralı Kart Izgarası */
+        .numara-izgarasi {
+            display: grid;
+            grid-template-columns: repeat(25, minmax(0, 1fr));
+            gap: clamp(2px, 0.35vw, 5px);
+            width: 100%;
+        }
+
+        .numara-buton {
+            min-width: 0;
+            height: clamp(22px, 3.3dvh, 32px);
+            border-radius: clamp(6px, 0.9dvh, 9px);
+            font-weight: 900;
+            font-size: clamp(0.62rem, 1vw, 0.82rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            cursor: pointer;
+            transition: transform 0.1s ease, background-color 0.15s ease, border-color 0.15s ease;
+            padding: 0;
+        }
+
+        .numara-buton:hover {
+            border-color: #38bdf8;
+            background: #e0f2fe;
+        }
+
+        .numara-buton.durum-dogru {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #15803d;
+        }
+
+        .numara-buton.durum-tekrar {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            color: #b45309;
+        }
+
+        .numara-buton.aktif-kart {
+            background: #0284c7 !important;
+            border-color: #0369a1 !important;
+            color: #ffffff !important;
+            transform: scale(1.08);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+            z-index: 2;
+        }
+
+        .numara-buton.secim-parlama {
+            background: #f97316 !important;
+            border-color: #c2410c !important;
+            color: #ffffff !important;
+            transform: scale(1.14);
+            z-index: 5;
+        }
+
+        /* ============================================================
+           ANA SAHNE ALANI (KARAKTER + İPUÇLARI + CEVAP KUTUSU)
+           ============================================================ */
+        .ana-sahne {
+            flex: 1 1 0%;
+            min-height: 0;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: 37% 1fr;
+            gap: clamp(6px, 1.2vw, 14px);
+            overflow: hidden;
+        }
+
+        /* Sol Sütun: Öğrenci Karakter Kartı */
+        .karakter-paneli {
+            min-height: 0;
+            min-width: 0;
+            background: linear-gradient(180deg, #f0f9ff 0%, #fffbeb 55%, #fff7ed 100%);
+            border: clamp(2px, 0.35dvh, 3px) solid #7dd3fc;
+            border-radius: clamp(14px, 2dvh, 24px);
+            padding: clamp(6px, 1.1dvh, 14px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 16px -4px rgba(14, 165, 233, 0.15);
+            overflow: hidden;
+        }
+
+        .arkadas-balonu {
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: #ffffff;
+            padding: clamp(4px, 0.7dvh, 8px) clamp(10px, 1.4vw, 18px);
+            border-radius: 9999px;
+            font-weight: 900;
+            font-size: clamp(0.78rem, 1.5vw, 1.15rem);
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+            text-align: center;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .karakter-svg-kapsayici {
+            flex: 1 1 0%;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(2px, 0.5dvh, 6px);
+        }
+
+        .karakter-svg-kapsayici svg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: 100%;
+            filter: drop-shadow(0 6px 10px rgba(15, 23, 42, 0.12));
+        }
+
+        .isim-etiketi {
+            flex-shrink: 0;
+            background: #ffffff;
+            border: clamp(2px, 0.35dvh, 3px) solid #fbbf24;
+            border-radius: clamp(10px, 1.4dvh, 16px);
+            padding: clamp(3px, 0.6dvh, 7px) clamp(12px, 1.8vw, 24px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 8px rgba(245, 158, 11, 0.18);
+        }
+
+        .isim-etiketi-numara {
+            background: #fef3c7;
+            color: #b45309;
+            font-weight: 900;
+            font-size: clamp(0.72rem, 1.2vw, 0.95rem);
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+
+        .isim-etiketi-ad {
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: clamp(1.05rem, 2.2vw, 1.75rem);
+            color: #1e293b;
+            line-height: 1.1;
+        }
+
+        /* Sağ Sütun: Görsel İpuçları ve Sabit Yükseklikli Cevap Kutusu */
+        .sag-paneli {
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(6px, 1dvh, 12px);
+            overflow: hidden;
+        }
+
+        .ipuclari-izgarasi {
+            flex: 1.25 1 0%;
+            min-height: 0;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(6px, 1.1vw, 14px);
+            overflow: hidden;
+        }
+
+        .ipucu-karti {
+            min-height: 0;
+            min-width: 0;
+            border-radius: clamp(14px, 2dvh, 22px);
+            padding: clamp(6px, 1dvh, 12px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+        }
+
+        .ipucu-olumsuz {
+            background: #fff1f2;
+            border: clamp(2px, 0.35dvh, 3px) solid #fda4af;
+        }
+
+        .ipucu-olumlu {
+            background: #ecfdf5;
+            border: clamp(2px, 0.35dvh, 3px) solid #6ee7b7;
+        }
+
+        .ipucu-rozet {
+            flex-shrink: 0;
+            color: #ffffff;
+            font-weight: 900;
+            font-size: clamp(0.74rem, 1.35vw, 1.05rem);
+            padding: clamp(2px, 0.5dvh, 5px) clamp(10px, 1.4vw, 18px);
+            border-radius: 9999px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+            white-space: nowrap;
+        }
+
+        .ipucu-svg-kapsayici {
+            flex: 1 1 0%;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(2px, 0.4dvh, 6px);
+        }
+
+        .ipucu-svg-kapsayici svg {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: 100%;
+        }
+
+        .ipucu-alt-yazi {
+            flex-shrink: 0;
+            font-weight: 900;
+            font-size: clamp(0.82rem, 1.55vw, 1.25rem);
+            padding: clamp(2px, 0.4dvh, 5px) clamp(8px, 1.2vw, 14px);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            text-align: center;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+
+        /* Önceden Ayrılmış Cevap Alanı (Açıldığında düzen kayması yapmaz) */
+        .cevap-alani {
+            flex: 0.85 1 0%;
+            min-height: 0;
+            min-width: 0;
+            border-radius: clamp(14px, 2dvh, 22px);
+            padding: clamp(6px, 1.1dvh, 14px) clamp(10px, 1.6vw, 20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            overflow: hidden;
+        }
+
+        .cevap-gizli {
+            background: #f1f5f9;
+            border: clamp(2px, 0.35dvh, 3px) dashed #cbd5e1;
+        }
+
+        .cevap-acik {
+            background: #ffffff;
+            border: clamp(2px, 0.4dvh, 4px) solid #0284c7;
+            box-shadow: 0 8px 20px -4px rgba(2, 132, 199, 0.18);
+        }
+
+        .cumle-satir-1 {
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: clamp(0.95rem, 2.15vw, 1.75rem);
+            color: #1e293b;
+            line-height: 1.25;
+        }
+
+        .cumle-satir-2 {
+            font-family: 'Quicksand', 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: clamp(0.95rem, 2.15vw, 1.75rem);
+            color: #0284c7;
+            line-height: 1.25;
+        }
+
+        /* ============================================================
+           ALT EYLEM BUTONLARI ÇUBUĞU
+           ============================================================ */
+        .alt-kontrol-cubugu {
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: clamp(4px, 0.8vw, 10px);
+            width: 100%;
+        }
+
+        .eylem-buton {
+            min-width: 0;
+            height: clamp(36px, 5.6dvh, 52px);
+            border-radius: clamp(10px, 1.5dvh, 16px);
+            font-weight: 900;
+            font-size: clamp(0.72rem, 1.3vw, 1.02rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(3px, 0.5vw, 7px);
+            padding: 0 clamp(4px, 0.8vw, 12px);
+            border-bottom-width: clamp(3px, 0.5dvh, 5px);
+            cursor: pointer;
+            transition: transform 0.1s ease, filter 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .eylem-buton:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+
+        /* ============================================================
+           BAŞLANGIÇ EKRANI (START SCREEN)
+           ============================================================ */
+        #baslangic-ekrani {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 50;
+            background: radial-gradient(circle at top left, #e0f2fe 0%, #fffbeb 52%, #ffedd5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(12px, 3dvh, 28px);
+            overflow: hidden;
+        }
+
+        .baslangic-karti {
+            background: #ffffff;
+            border: 4px solid #38bdf8;
+            border-radius: clamp(20px, 3dvh, 32px);
+            padding: clamp(16px, 3.2dvh, 36px) clamp(18px, 3.5vw, 44px);
+            max-width: 640px;
+            width: 100%;
+            max-height: 94dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: clamp(10px, 2dvh, 20px);
+            box-shadow: 0 20px 40px -10px rgba(2, 132, 199, 0.22);
+        }
+
+        /* ============================================================
+           ANİMASYONLAR
+           ============================================================ */
+        @keyframes kartBelirme {
+            0% { transform: scale(0.96); opacity: 0.4; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes yildizPatlama {
+            0% { transform: scale(0.3) translateY(0); opacity: 1; }
+            100% { transform: scale(1.4) translateY(-60px); opacity: 0; }
+        }
+
+        .sahne-yenile {
+            animation: kartBelirme 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .parcacik {
+            position: fixed;
+            pointer-events: none;
+            z-index: 60;
+            animation: yildizPatlama 0.75s ease-out forwards;
+        }
+
+        /* ============================================================
+           DUYARLI EKRAN KURALLARI (MOBİL DİKEY VE MOBİL YATAY)
+           ============================================================ */
+        /* Tablet ve Orta Ekranlar */
+        @media (max-width: 900px) {
+            .numara-izgarasi {
+                grid-template-columns: repeat(13, minmax(0, 1fr));
+            }
+            .numara-buton {
+                height: clamp(20px, 2.8dvh, 26px);
+            }
+        }
+
+        /* Mobil Dikey (Portrait) */
+        @media (max-width: 680px) and (orientation: portrait) {
+            .oyun-alt-baslik {
+                display: none;
+            }
+            .ana-sahne {
+                grid-template-columns: 1fr;
+                grid-template-rows: 42% 1fr;
+            }
+            .karakter-paneli {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 6px 10px;
+                gap: 8px;
+            }
+            .karakter-sol-bilgi {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                max-width: 48%;
+            }
+            .arkadas-balonu {
+                white-space: normal;
+                font-size: 0.78rem;
+                padding: 4px 10px;
+            }
+            .alt-kontrol-cubugu {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .eylem-buton {
+                height: clamp(34px, 4.8dvh, 42px);
+                font-size: 0.76rem;
+            }
+        }
+
+        /* Mobil Yatay (Landscape - Kısa Yükseklikli Ekranlar) */
+        @media (orientation: landscape) and (max-height: 540px) {
+            #oyun-kapsayici {
+                padding: 4px 8px;
+                gap: 4px;
+            }
+            .ust-panel {
+                padding: 3px 8px;
+                gap: 3px;
+            }
+            .oyun-alt-baslik {
+                display: none;
+            }
+            .numara-izgarasi {
+                grid-template-columns: repeat(25, minmax(0, 1fr));
+                gap: 2px;
+            }
+            .numara-buton {
+                height: 20px;
+                font-size: 0.62rem;
+                border-width: 1.5px;
+            }
+            .ana-sahne {
+                grid-template-columns: 32% 1fr;
+                gap: 6px;
+            }
+            .karakter-paneli {
+                padding: 4px 6px;
+            }
+            .arkadas-balonu {
+                font-size: 0.72rem;
+                padding: 2px 10px;
+            }
+            .isim-etiketi {
+                padding: 2px 10px;
+            }
+            .isim-etiketi-ad {
+                font-size: 0.95rem;
+            }
+            .sag-paneli {
+                gap: 4px;
+            }
+            .ipuclari-izgarasi {
+                flex: 1.35 1 0%;
+                gap: 6px;
+            }
+            .ipucu-karti {
+                padding: 4px 6px;
+            }
+            .ipucu-rozet {
+                font-size: 0.68rem;
+                padding: 1px 8px;
+            }
+            .ipucu-alt-yazi {
+                font-size: 0.74rem;
+                padding: 1px 6px;
+            }
+            .cevap-alani {
+                flex: 0.75 1 0%;
+                padding: 3px 10px;
+            }
+            .cumle-satir-1, .cumle-satir-2 {
+                font-size: clamp(0.82rem, 1.8vw, 1.15rem);
+                line-height: 1.15;
+            }
+            .alt-kontrol-cubugu {
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+                gap: 4px;
+            }
+            .eylem-buton {
+                height: 32px;
+                font-size: 0.72rem;
+                border-bottom-width: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+         BAŞLANGIÇ EKRANI (SES ETKİNLEŞTİRME VE OYUNA GİRİŞ)
+         ============================================================ -->
+    <div id="baslangic-ekrani">
+        <div class="baslangic-karti">
+            <div class="flex items-center justify-center gap-3 text-4xl sm:text-5xl">
+                <span>🎒</span>
+                <span>👕</span>
+                <span>👟</span>
+                <span>🧢</span>
+            </div>
+
+            <div>
+                <span class="inline-block bg-amber-100 text-amber-800 border-2 border-amber-300 font-black text-xs sm:text-sm px-4 py-1 rounded-full mb-2">
+                    25 Öğrenci • Konuşma Etkinliği
+                </span>
+                <h1 class="text-2xl sm:text-4xl font-black text-sky-900 tracking-tight">
+                    Benim Arkadaşım
+                </h1>
+                <p class="text-sm sm:text-base font-bold text-slate-600 mt-2 leading-relaxed">
+                    Resimlere ve ipuçlarına bakarak arkadaşının ne giymediğini ve ne giydiğini söyle!
+                </p>
+            </div>
+
+            <!-- Örnek Kalıp Kutusu -->
+            <div class="w-full bg-sky-50 border-2 border-sky-200 rounded-2xl p-3 sm:p-4 text-left space-y-1">
+                <div class="text-xs sm:text-sm font-black text-sky-700">💬 Örnek Konuşma Kalıbı:</div>
+                <div class="text-sm sm:text-base font-extrabold text-slate-800">• Benim arkadaşım Orhan.</div>
+                <div class="text-sm sm:text-base font-extrabold text-rose-600">• Orhan yeşil tişört giymiyor.</div>
+                <div class="text-sm sm:text-base font-extrabold text-emerald-700">• O, mavi gömlek giyiyor.</div>
+            </div>
+
+            <button onclick="oyunuBaslat()" class="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-lg sm:text-2xl px-10 py-3.5 sm:py-4 rounded-2xl border-b-4 border-orange-700 shadow-lg cursor-pointer transition transform active:translate-y-1 flex items-center justify-center gap-3">
+                <span>▶️</span>
+                <span>Oyuna Başla</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         ANA OYUN KAPSAYICISI (100% EKRAN YÜKSEKLİĞİ)
+         ============================================================ -->
+    <div id="oyun-kapsayici">
+
+        <!-- 1. ÜST KONTROL PANELİ -->
+        <header class="ust-panel">
+            <div class="ust-bilgi-satiri">
+                <!-- Sol Başlık -->
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-xl sm:text-2xl shrink-0">🗣️</span>
+                    <div class="min-w-0">
+                        <div class="oyun-baslik">Benim Arkadaşım</div>
+                        <div class="oyun-alt-baslik">Pratik Yap • Resme bak ve cümleyi kur</div>
+                    </div>
+                </div>
+
+                <!-- Sağ Puan Durumu ve Ses/Sıfırlama Butonları -->
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <span id="puan-dogru" class="bg-emerald-100 text-emerald-800 border border-emerald-300 font-black text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-xl">
+                        ✅ 0
+                    </span>
+                    <span id="puan-tekrar" class="bg-amber-100 text-amber-800 border border-amber-300 font-black text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-xl">
+                        🔄 0
+                    </span>
+                    <button id="ses-butonu" onclick="sesDurumunuDegistir()" title="Sesi Aç / Kapat" class="bg-sky-100 hover:bg-sky-200 text-sky-800 border border-sky-300 font-black text-xs sm:text-sm px-2.5 py-1 rounded-xl cursor-pointer">
+                        🔊
+                    </button>
+                    <button onclick="tumunuSifirla()" title="İlerlemeyi Sıfırla" class="bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 border border-slate-300 font-black text-xs sm:text-sm px-2.5 py-1 rounded-xl cursor-pointer">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+
+            <!-- 25 Öğrenci Seçici Numaralar -->
+            <nav id="numara-cubugu" class="numara-izgarasi" aria-label="Öğrenci Numaraları">
+                <!-- JavaScript ile 1'den 25'e kadar oluşturulur -->
+            </nav>
+        </header>
+
+        <!-- 2. ANA SAHNE ALANI -->
+        <main id="ana-sahne" class="ana-sahne">
+
+            <!-- Sol Panel: Öğrenci Karakter Çizimi -->
+            <section class="karakter-paneli">
+                <div class="karakter-sol-bilgi flex flex-col items-center gap-1.5 w-full">
+                    <div id="arkadas-balonu" class="arkadas-balonu">
+                        💬 Benim arkadaşım Bekir
+                    </div>
+                </div>
+
+                <div id="karakter-svg-alani" class="karakter-svg-kapsayici">
+                    <!-- Dinamik Öğrenci SVG -->
+                </div>
+
+                <div class="isim-etiketi">
+                    <span id="kart-numara-etiket" class="isim-etiketi-numara">1 / 25</span>
+                    <span id="karakter-ad-etiket" class="isim-etiketi-ad">Bekir</span>
+                </div>
+            </section>
+
+            <!-- Sağ Panel: İki Görsel İpucu + Sabit Yükseklikli Cevap Kutusu -->
+            <section class="sag-paneli">
+
+                <!-- Görsel İpuçları Kartları -->
+                <div class="ipuclari-izgarasi">
+                    <!-- 1. İpucu: Giymiyor (Olumsuz) -->
+                    <div class="ipucu-karti ipucu-olumsuz">
+                        <span class="ipucu-rozet bg-rose-500">❌ Giymiyor</span>
+                        <div id="ipucu-olumsuz-svg" class="ipucu-svg-kapsayici"></div>
+                        <div id="ipucu-olumsuz-yazi" class="ipucu-alt-yazi text-rose-700 border border-rose-200">
+                            mavi şort
+                        </div>
+                    </div>
+
+                    <!-- 2. İpucu: Giyiyor (Olumlu) -->
+                    <div class="ipucu-karti ipucu-olumlu">
+                        <span class="ipucu-rozet bg-emerald-500">✅ Giyiyor</span>
+                        <div id="ipucu-olumlu-svg" class="ipucu-svg-kapsayici"></div>
+                        <div id="ipucu-olumlu-yazi" class="ipucu-alt-yazi text-emerald-800 border border-emerald-200">
+                            yeşil tişört
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Önceden Ayrılmış Cevap Alanı -->
+                <div id="cevap-kutusu" class="cevap-alani cevap-gizli">
+                    <div id="cevap-gizli-icerik" class="text-slate-500 font-extrabold text-xs sm:text-base lg:text-lg px-2">
+                        🤫 Önce ipuçlarına bakarak cümleyi söyle, sonra <span class="text-sky-600">"Cevabı Göster"</span> butonuna bas!
+                    </div>
+                    <div id="cevap-acik-icerik" class="hidden w-full space-y-0.5">
+                        <p id="cumle-1-metin" class="cumle-satir-1"></p>
+                        <p id="cumle-2-metin" class="cumle-satir-2"></p>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- 3. ALT KONTROL BUTONLARI -->
+        <footer class="alt-kontrol-cubugu">
+            <button onclick="oncekiKart()" class="eylem-buton bg-slate-200 hover:bg-slate-300 border-slate-400 text-slate-800">
+                <span>⬅️</span>
+                <span>Önceki</span>
+            </button>
+
+            <button id="rastgele-buton" onclick="rastgeleSec()" class="eylem-buton bg-orange-500 hover:bg-orange-600 border-orange-700 text-white">
+                <span>🎲</span>
+                <span>Rastgele</span>
+            </button>
+
+            <button id="cevap-buton" onclick="cevabiAcKapat()" class="eylem-buton bg-sky-500 hover:bg-sky-600 border-sky-700 text-white">
+                <span id="cevap-buton-ikon">👀</span>
+                <span id="cevap-buton-yazi">Cevabı Göster</span>
+            </button>
+
+            <button onclick="durumIsaretle('dogru', event)" class="eylem-buton bg-emerald-500 hover:bg-emerald-600 border-emerald-700 text-white">
+                <span>✅</span>
+                <span>Doğru</span>
+            </button>
+
+            <button onclick="durumIsaretle('tekrar', event)" class="eylem-buton bg-amber-400 hover:bg-amber-500 border-amber-600 text-slate-900">
+                <span>🔄</span>
+                <span>Tekrar</span>
+            </button>
+
+            <button onclick="sonrakiKart()" class="eylem-buton bg-indigo-500 hover:bg-indigo-600 border-indigo-700 text-white">
+                <span>Sonraki</span>
+                <span>➡️</span>
+            </button>
+        </footer>
+
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. RENK PALETİ VE KIYAFET TÜRLERİ
+        // ============================================================
+        const RENKLER = {
+            kirmizi:    { ad: "kırmızı",    dolgu: "#ef4444", kenar: "#991b1b", detay: "#fecaca" },
+            mavi:       { ad: "mavi",       dolgu: "#2563eb", kenar: "#1e3a8a", detay: "#93c5fd" },
+            yesil:      { ad: "yeşil",      dolgu: "#16a34a", kenar: "#14532d", detay: "#bbf7d0" },
+            sari:       { ad: "sarı",       dolgu: "#facc15", kenar: "#a16207", detay: "#fef08a" },
+            siyah:      { ad: "siyah",      dolgu: "#1e293b", kenar: "#020617", detay: "#64748b" },
+            beyaz:      { ad: "beyaz",      dolgu: "#ffffff", kenar: "#475569", detay: "#cbd5e1" },
+            turuncu:    { ad: "turuncu",    dolgu: "#f97316", kenar: "#9a3412", detay: "#fed7aa" },
+            mor:        { ad: "mor",        dolgu: "#9333ea", kenar: "#581c87", detay: "#e9d5ff" },
+            pembe:      { ad: "pembe",      dolgu: "#ec4899", kenar: "#9d174d", detay: "#fbcfe8" },
+            kahverengi: { ad: "kahverengi", dolgu: "#854d0e", kenar: "#451a03", detay: "#fde68a" }
+        };
+
+        const KIYAFET_ADLARI = {
+            etek: "etek",
+            sapka: "şapka",
+            gomlek: "gömlek",
+            ceket: "ceket",
+            ayakkabi: "ayakkabı",
+            sort: "şort",
+            tisort: "tişört",
+            pantolon: "pantolon",
+            kazak: "kazak",
+            bluz: "bluz"
+        };
+
+        // ============================================================
+        // 2. 25 ÖĞRENCİ ÖRNEĞİ (10 FARKLI KIYAFET TÜRÜ İLE)
+        // ============================================================
+        const OGRENCILER = [
+            { id: 1,  ad: "Bekir",   cinsiyet: "e", sac: "#1e293b", ten: "#fed7aa", negRenk: "mavi",       negTur: "sort",     posRenk: "yesil",      posTur: "tisort" },
+            { id: 2,  ad: "Orhan",   cinsiyet: "e", sac: "#5c2d16", ten: "#fdba74", negRenk: "yesil",      negTur: "tisort",   posRenk: "mavi",       posTur: "gomlek" },
+            { id: 3,  ad: "Nurcan",  cinsiyet: "k", sac: "#6b3410", ten: "#fed7aa", negRenk: "kirmizi",    negTur: "bluz",     posRenk: "sari",       posTur: "kazak" },
+            { id: 4,  ad: "Zeynep",  cinsiyet: "k", sac: "#1e293b", ten: "#fed7aa", negRenk: "beyaz",      negTur: "ayakkabi", posRenk: "siyah",      posTur: "ayakkabi" },
+            { id: 5,  ad: "Ali",     cinsiyet: "e", sac: "#334155", ten: "#fdba74", negRenk: "siyah",      negTur: "sapka",    posRenk: "kirmizi",    posTur: "sapka" },
+            { id: 6,  ad: "Ayşe",    cinsiyet: "k", sac: "#78350f", ten: "#fed7aa", negRenk: "mavi",       negTur: "etek",     posRenk: "pembe",      posTur: "etek" },
+            { id: 7,  ad: "Mehmet",  cinsiyet: "e", sac: "#1e293b", ten: "#fDBA74", negRenk: "kahverengi", negTur: "ceket",    posRenk: "turuncu",    posTur: "ceket" },
+            { id: 8,  ad: "Elif",    cinsiyet: "k", sac: "#451a03", ten: "#fed7aa", negRenk: "sari",       negTur: "pantolon", posRenk: "mor",        posTur: "bluz" },
+            { id: 9,  ad: "Yusuf",   cinsiyet: "e", sac: "#5c2d16", ten: "#fed7aa", negRenk: "turuncu",    negTur: "kazak",    posRenk: "beyaz",      posTur: "gomlek" },
+            { id: 10, ad: "Fatma",   cinsiyet: "k", sac: "#1e293b", ten: "#fdba74", negRenk: "yesil",      negTur: "ceket",    posRenk: "kirmizi",    posTur: "ayakkabi" },
+            { id: 11, ad: "Ömer",    cinsiyet: "e", sac: "#3f2305", ten: "#fed7aa", negRenk: "beyaz",      negTur: "gomlek",   posRenk: "siyah",      posTur: "pantolon" },
+            { id: 12, ad: "Zehra",   cinsiyet: "k", sac: "#92400e", ten: "#fed7aa", negRenk: "mor",        negTur: "kazak",    posRenk: "turuncu",    posTur: "etek" },
+            { id: 13, ad: "Mustafa", cinsiyet: "e", sac: "#1e293b", ten: "#fdba74", negRenk: "kirmizi",    negTur: "pantolon", posRenk: "mavi",       posTur: "sort" },
+            { id: 14, ad: "Meryem",  cinsiyet: "k", sac: "#5c2d16", ten: "#fed7aa", negRenk: "pembe",      negTur: "sapka",    posRenk: "beyaz",      posTur: "bluz" },
+            { id: 15, ad: "Ahmet",   cinsiyet: "e", sac: "#451a03", ten: "#fed7aa", negRenk: "siyah",      negTur: "ayakkabi", posRenk: "kahverengi", posTur: "ceket" },
+            { id: 16, ad: "Esra",    cinsiyet: "k", sac: "#1e293b", ten: "#fed7aa", negRenk: "turuncu",    negTur: "bluz",     posRenk: "yesil",      posTur: "kazak" },
+            { id: 17, ad: "Kerem",   cinsiyet: "e", sac: "#78350f", ten: "#fdba74", negRenk: "mavi",       negTur: "ceket",    posRenk: "sari",       posTur: "sapka" },
+            { id: 18, ad: "Defne",   cinsiyet: "k", sac: "#6b3410", ten: "#fed7aa", negRenk: "kirmizi",    negTur: "etek",     posRenk: "mavi",       posTur: "pantolon" },
+            { id: 19, ad: "Emir",    cinsiyet: "e", sac: "#1e293b", ten: "#fed7aa", negRenk: "sari",       negTur: "sort",     posRenk: "kirmizi",    posTur: "kazak" },
+            { id: 20, ad: "Ecrin",   cinsiyet: "k", sac: "#451a03", ten: "#fdba74", negRenk: "kahverengi", negTur: "ayakkabi", posRenk: "pembe",      posTur: "ceket" },
+            { id: 21, ad: "Can",     cinsiyet: "e", sac: "#5c2d16", ten: "#fed7aa", negRenk: "mor",        negTur: "tisort",   posRenk: "turuncu",    posTur: "sort" },
+            { id: 22, ad: "Selin",   cinsiyet: "k", sac: "#92400e", ten: "#fed7aa", negRenk: "beyaz",      negTur: "etek",     posRenk: "sari",       posTur: "bluz" },
+            { id: 23, ad: "Berat",   cinsiyet: "e", sac: "#1e293b", ten: "#fdba74", negRenk: "yesil",      negTur: "gomlek",   posRenk: "beyaz",      posTur: "tisort" },
+            { id: 24, ad: "Azra",    cinsiyet: "k", sac: "#1e293b", ten: "#fed7aa", negRenk: "siyah",      negTur: "sort",     posRenk: "mor",        posTur: "ayakkabi" },
+            { id: 25, ad: "Mert",    cinsiyet: "e", sac: "#451a03", ten: "#fed7aa", negRenk: "turuncu",    negTur: "sapka",    posRenk: "yesil",      posTur: "pantolon" }
+        ].map(ogr => ({
+            ...ogr,
+            durum: "bekliyor", // "bekliyor" | "dogru" | "tekrar"
+            negMetin: `${RENKLER[ogr.negRenk].ad} ${KIYAFET_ADLARI[ogr.negTur]}`,
+            posMetin: `${RENKLER[ogr.posRenk].ad} ${KIYAFET_ADLARI[ogr.posTur]}`,
+            cumle1: `${ogr.ad} ${RENKLER[ogr.negRenk].ad} ${KIYAFET_ADLARI[ogr.negTur]} giymiyor.`,
+            cumle2: `O, ${RENKLER[ogr.posRenk].ad} ${KIYAFET_ADLARI[ogr.posTur]} giyiyor.`
+        }));
+
+        let aktifIndeks = 0;
+        let cevapAcikMi = false;
+        let karistiriliyorMu = false;
+        let sesAcikMi = true;
+
+        // ============================================================
+        // 3. WEB AUDIO API İLE SENTETİK SES EFEKTLERİ
+        // ============================================================
+        let sesBaglami = null;
+
+        function sesMotorunuHazirla() {
+            if (!sesBaglami) {
+                const SesSinifi = window.AudioContext || window.webkitAudioContext;
+                if (SesSinifi) {
+                    sesBaglami = new SesSinifi();
+                }
+            }
+            if (sesBaglami && sesBaglami.state === "suspended") {
+                sesBaglami.resume();
+            }
+        }
+
+        function notaCal(frekans, tip, sure, gecikme = 0, siddet = 0.14) {
+            if (!sesAcikMi) return;
+            try {
+                sesMotorunuHazirla();
+                if (!sesBaglami) return;
+                const simdi = sesBaglami.currentTime + gecikme;
+                const osilator = sesBaglami.createOscillator();
+                const kazanc = sesBaglami.createGain();
+
+                osilator.type = tip;
+                osilator.frequency.setValueAtTime(frekans, simdi);
+
+                kazanc.gain.setValueAtTime(0.001, simdi);
+                kazanc.gain.exponentialRampToValueAtTime(siddet, simdi + 0.015);
+                kazanc.gain.exponentialRampToValueAtTime(0.001, simdi + sure);
+
+                osilator.connect(kazanc);
+                kazanc.connect(sesBaglami.destination);
+
+                osilator.start(simdi);
+                osilator.stop(simdi + sure + 0.02);
+            } catch (e) {
+                // Tarayıcı ses politikası hatası durumunda sessiz devam et
+            }
+        }
+
+        // Yumuşak tıklama / geçiş sesi
+        function tikSesi() {
+            notaCal(580, "sine", 0.07, 0, 0.09);
+        }
+
+        // Kart açılış sesi
+        function kartAcilisSesi() {
+            notaCal(440, "triangle", 0.12, 0, 0.11);
+            notaCal(659.25, "triangle", 0.16, 0.07, 0.12);
+        }
+
+        // Doğru cevap teşvik melodisi (Neşeli yükselen akor)
+        function dogruCevapSesi() {
+            notaCal(523.25, "triangle", 0.14, 0.00, 0.16); // Do5
+            notaCal(659.25, "triangle", 0.14, 0.09, 0.16); // Mi5
+            notaCal(783.99, "triangle", 0.16, 0.18, 0.17); // Sol5
+            notaCal(1046.50, "sine",    0.34, 0.27, 0.18); // Do6
+        }
+
+        // Yanlış / Tekrar uyarı tonu (Yumuşak alçalan çift ton)
+        function tekrarUyariSesi() {
+            notaCal(349.23, "sawtooth", 0.18, 0.00, 0.09); // Fa4
+            notaCal(277.18, "sawtooth", 0.26, 0.15, 0.09); // Do#4
+        }
+
+        function sesDurumunuDegistir() {
+            sesAcikMi = !sesAcikMi;
+            const buton = document.getElementById("ses-butonu");
+            buton.textContent = sesAcikMi ? "🔊" : "🔇";
+            if (sesAcikMi) {
+                sesMotorunuHazirla();
+                tikSesi();
+            }
+        }
+
+        function oyunuBaslat() {
+            sesMotorunuHazirla();
+            dogruCevapSesi();
+            const baslangic = document.getElementById("baslangic-ekrani");
+            baslangic.style.transition = "opacity 0.28s ease, transform 0.28s ease";
+            baslangic.style.opacity = "0";
+            baslangic.style.transform = "scale(1.03)";
+            setTimeout(() => {
+                baslangic.style.display = "none";
+            }, 280);
+        }
+
+        // ============================================================
+        // 4. DİNAMİK KIYAFET SVG ÇİZİCİ (10 FARKLI KIYAFET TÜRÜ)
+        // ============================================================
+        function kiyafetSvgOlustur(tur, renkAnahtari) {
+            const r = RENKLER[renkAnahtari];
+            let icerik = "";
+
+            switch (tur) {
+                case "tisort":
+                    icerik = `
+                        <path d="M34 26 L48 21 Q60 32 72 21 L86 26 L108 46 L95 60 L82 49 L82 96 L38 96 L38 49 L25 60 L12 46 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <path d="M47 22 Q60 35 73 22" fill="none" stroke="${r.detay}" stroke-width="3.5" stroke-linecap="round"/>`;
+                    break;
+
+                case "gomlek":
+                    icerik = `
+                        <path d="M34 25 L48 20 L72 20 L86 25 L108 46 L95 60 L82 49 L82 96 L38 96 L38 49 L25 60 L12 46 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <polygon points="46,20 60,35 51,42" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.2"/>
+                        <polygon points="74,20 60,35 69,42" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.2"/>
+                        <line x1="60" y1="35" x2="60" y2="96" stroke="${r.kenar}" stroke-width="3"/>
+                        <circle cx="60" cy="51" r="3" fill="${r.kenar}"/>
+                        <circle cx="60" cy="67" r="3" fill="${r.kenar}"/>
+                        <circle cx="60" cy="83" r="3" fill="${r.kenar}"/>`;
+                    break;
+
+                case "kazak":
+                    icerik = `
+                        <path d="M34 26 L47 20 Q60 28 73 20 L86 26 L106 54 L94 64 L82 48 L82 96 L38 96 L38 48 L26 64 L14 54 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <rect x="46" y="18" width="28" height="9" rx="4" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.5"/>
+                        <rect x="38" y="86" width="44" height="10" rx="2" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.5"/>
+                        <path d="M44 46 Q60 54 76 46 M44 62 Q60 70 76 62" fill="none" stroke="${r.detay}" stroke-width="3" stroke-linecap="round"/>`;
+                    break;
+
+                case "bluz":
+                    icerik = `
+                        <path d="M36 28 Q60 40 84 28 L104 46 L92 60 L80 50 L84 95 L36 95 L40 50 L28 60 L16 46 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <path d="M40 29 Q50 42 60 34 Q70 42 80 29" fill="none" stroke="${r.detay}" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="60" cy="48" r="3" fill="${r.detay}"/>
+                        <circle cx="60" cy="62" r="3" fill="${r.detay}"/>`;
+                    break;
+
+                case "ceket":
+                    icerik = `
+                        <path d="M32 24 L47 19 L73 19 L88 24 L108 52 L95 62 L82 47 L82 97 L38 97 L38 47 L25 62 L12 52 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <rect x="52" y="22" width="16" height="74" fill="#f8fafc" stroke="${r.kenar}" stroke-width="2.5"/>
+                        <polygon points="46,20 53,48 42,44" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.2"/>
+                        <polygon points="74,20 67,48 78,44" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.2"/>
+                        <rect x="65" y="64" width="11" height="9" rx="2" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2"/>
+                        <rect x="44" y="64" width="11" height="9" rx="2" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2"/>`;
+                    break;
+
+                case "pantolon":
+                    icerik = `
+                        <path d="M36 18 L84 18 L90 102 L65 102 L60 54 L55 102 L30 102 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <line x1="36" y1="28" x2="84" y2="28" stroke="${r.detay}" stroke-width="3.5"/>
+                        <line x1="60" y1="28" x2="60" y2="46" stroke="${r.kenar}" stroke-width="2.5"/>`;
+                    break;
+
+                case "sort":
+                    icerik = `
+                        <path d="M26 26 L94 26 L102 84 L66 84 L60 60 L54 84 L18 84 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <line x1="26" y1="36" x2="94" y2="36" stroke="${r.detay}" stroke-width="3.5"/>
+                        <line x1="60" y1="36" x2="60" y2="54" stroke="${r.kenar}" stroke-width="2.5"/>`;
+                    break;
+
+                case "etek":
+                    icerik = `
+                        <path d="M38 22 L82 22 L98 94 L22 94 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <line x1="38" y1="31" x2="82" y2="31" stroke="${r.detay}" stroke-width="4"/>
+                        <line x1="50" y1="32" x2="43" y2="93" stroke="${r.kenar}" stroke-width="2.5" opacity="0.55"/>
+                        <line x1="60" y1="32" x2="60" y2="93" stroke="${r.kenar}" stroke-width="2.5" opacity="0.55"/>
+                        <line x1="70" y1="32" x2="77" y2="93" stroke="${r.kenar}" stroke-width="2.5" opacity="0.55"/>`;
+                    break;
+
+                case "sapka":
+                    icerik = `
+                        <path d="M30 68 C30 34, 90 34, 90 68 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <rect x="30" y="59" width="60" height="9" fill="${r.detay}" stroke="${r.kenar}" stroke-width="2.5"/>
+                        <ellipse cx="60" cy="70" rx="48" ry="11" fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4"/>`;
+                    break;
+
+                case "ayakkabi":
+                    icerik = `
+                        <path d="M18 76 C18 48, 46 42, 57 55 L92 64 C104 68, 106 84, 100 90 L18 90 Z"
+                              fill="${r.dolgu}" stroke="${r.kenar}" stroke-width="4" stroke-linejoin="round"/>
+                        <line x1="18" y1="82" x2="102" y2="82" stroke="${r.detay}" stroke-width="4"/>
+                        <line x1="58" y1="55" x2="65" y2="48" stroke="${r.kenar}" stroke-width="3.5" stroke-linecap="round"/>
+                        <line x1="68" y1="58" x2="75" y2="51" stroke="${r.kenar}" stroke-width="3.5" stroke-linecap="round"/>`;
+                    break;
+            }
+
+            return `<svg viewBox="0 0 120 116" preserveAspectRatio="xMidYMid meet">${icerik}</svg>`;
+        }
+
+        // ============================================================
+        // 5. DİNAMİK ÖĞRENCİ KARAKTERİ SVG ÇİZİCİ (DOĞRU KIYAFETİ GİYER)
+        // ============================================================
+        function karakterSvgOlustur(ogr) {
+            const pRenk = RENKLER[ogr.posRenk];
+            const tur = ogr.posTur;
+
+            // Varsayılan nötr kıyafet renkleri (Eğer odak başka parçadaysa nötr renk kullanılır)
+            const notrUst = { dolgu: "#e2e8f0", kenar: "#64748b", detay: "#cbd5e1" };
+            const notrAlt = { dolgu: "#64748b", kenar: "#334155", detay: "#94a3b8" };
+            const notrAyakkabi = { dolgu: "#475569", kenar: "#1e293b", detay: "#94a3b8" };
+
+            const ustGiyimMi = ["tisort", "gomlek", "kazak", "bluz", "ceket"].includes(tur);
+            const altGiyimMi = ["pantolon", "sort", "etek"].includes(tur);
+            const ayakkabiMi = tur === "ayakkabi";
+            const sapkaMi = tur === "sapka";
+
+            const ustR = ustGiyimMi ? pRenk : notrUst;
+            const altR = altGiyimMi ? pRenk : notrAlt;
+            const ayakR = ayakkabiMi ? pRenk : notrAyakkabi;
+
+            // Alt giyim çizimi (pantolon, şort veya etek)
+            let altSvg = "";
+            if (tur === "etek" || (!altGiyimMi && ogr.cinsiyet === "k" && ogr.id % 2 === 0)) {
+                // Etek + Bacaklar
+                altSvg = `
+                    <rect x="92" y="176" width="12" height="36" fill="${ogr.ten}" stroke="#c2410c" stroke-width="2"/>
+                    <rect x="116" y="176" width="12" height="36" fill="${ogr.ten}" stroke="#c2410c" stroke-width="2"/>
+                    <path d="M76 150 L144 150 L158 192 L62 192 Z" fill="${altR.dolgu}" stroke="${altR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>`;
+            } else if (tur === "sort") {
+                // Şort + Bacaklar
+                altSvg = `
+                    <rect x="86" y="182" width="14" height="30" fill="${ogr.ten}" stroke="#c2410c" stroke-width="2"/>
+                    <rect x="120" y="182" width="14" height="30" fill="${ogr.ten}" stroke="#c2410c" stroke-width="2"/>
+                    <path d="M74 150 L146 150 L152 188 L115 188 L110 172 L105 188 L68 188 Z" fill="${altR.dolgu}" stroke="${altR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>`;
+            } else {
+                // Uzun Pantolon
+                altSvg = `
+                    <path d="M74 150 L146 150 L150 214 L116 214 L110 178 L104 214 L70 214 Z" fill="${altR.dolgu}" stroke="${altR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>`;
+            }
+
+            // Ayakkabı çizimi
+            const ayakkabiSvg = `
+                <path d="M68 218 C68 206, 104 206, 104 218 L104 226 L66 226 Z" fill="${ayakR.dolgu}" stroke="${ayakR.kenar}" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M116 218 C116 206, 152 206, 152 218 L154 226 L116 226 Z" fill="${ayakR.dolgu}" stroke="${ayakR.kenar}" stroke-width="3" stroke-linejoin="round"/>
+                <line x1="68" y1="221" x2="103" y2="221" stroke="${ayakR.detay}" stroke-width="2.5"/>
+                <line x1="117" y1="221" x2="152" y2="221" stroke="${ayakR.detay}" stroke-width="2.5"/>`;
+
+            // Üst giyim çizimi
+            let ustSvg = "";
+            if (tur === "ceket") {
+                ustSvg = `
+                    <path d="M64 100 C64 89, 156 89, 156 100 L168 148 L148 152 L148 158 L72 158 L72 152 L52 148 Z" fill="${ustR.dolgu}" stroke="${ustR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>
+                    <rect x="98" y="94" width="24" height="63" fill="#ffffff" stroke="${ustR.kenar}" stroke-width="2"/>
+                    <polygon points="88,91 99,118 85,114" fill="${ustR.detay}" stroke="${ustR.kenar}" stroke-width="2"/>
+                    <polygon points="132,91 121,118 135,114" fill="${ustR.detay}" stroke="${ustR.kenar}" stroke-width="2"/>`;
+            } else if (tur === "gomlek") {
+                ustSvg = `
+                    <path d="M64 100 C64 89, 156 89, 156 100 L168 148 L148 152 L148 158 L72 158 L72 152 L52 148 Z" fill="${ustR.dolgu}" stroke="${ustR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>
+                    <polygon points="90,90 110,106 99,115" fill="${ustR.detay}" stroke="${ustR.kenar}" stroke-width="2"/>
+                    <polygon points="130,90 110,106 121,115" fill="${ustR.detay}" stroke="${ustR.kenar}" stroke-width="2"/>
+                    <line x1="110" y1="106" x2="110" y2="157" stroke="${ustR.kenar}" stroke-width="2.5"/>
+                    <circle cx="110" cy="122" r="2.8" fill="${ustR.kenar}"/>
+                    <circle cx="110" cy="138" r="2.8" fill="${ustR.kenar}"/>`;
+            } else if (tur === "kazak") {
+                ustSvg = `
+                    <path d="M64 100 C64 89, 156 89, 156 100 L168 148 L148 152 L148 158 L72 158 L72 152 L52 148 Z" fill="${ustR.dolgu}" stroke="${ustR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>
+                    <rect x="92" y="88" width="36" height="10" rx="5" fill="${ustR.detay}" stroke="${ustR.kenar}" stroke-width="2.5"/>
+                    <path d="M84 124 Q110 134 136 124" fill="none" stroke="${ustR.detay}" stroke-width="3" stroke-linecap="round"/>`;
+            } else if (tur === "bluz") {
+                ustSvg = `
+                    <path d="M66 100 C66 89, 154 89, 154 100 L164 142 L146 148 L146 156 L74 156 L74 148 L56 142 Z" fill="${ustR.dolgu}" stroke="${ustR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M88 92 Q110 108 132 92" fill="none" stroke="${ustR.detay}" stroke-width="4" stroke-linecap="round"/>`;
+            } else {
+                // Tişört (veya varsayılan üst)
+                ustSvg = `
+                    <path d="M66 100 C66 89, 154 89, 154 100 L164 140 L146 146 L146 156 L74 156 L74 146 L56 140 Z" fill="${ustR.dolgu}" stroke="${ustR.kenar}" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M92 91 Q110 105 128 91" fill="none" stroke="${ustR.detay}" stroke-width="3.5" stroke-linecap="round"/>`;
+            }
+
+            // Kız öğrenciler için arka saç
+            const arkaSacSvg = ogr.cinsiyet === "k"
+                ? `<path d="M72 52 C66 88, 64 122, 76 134 L144 134 C156 122, 154 88, 148 52 Z" fill="${ogr.sac}"/>`
+                : "";
+
+            // Şapka çizimi (Eğer öğrenci şapka giyiyorsa)
+            const sapkaSvg = sapkaMi
+                ? `<path d="M76 36 C76 10, 144 10, 144 36 Z" fill="${pRenk.dolgu}" stroke="${pRenk.kenar}" stroke-width="3.5"/>
+                   <rect x="76" y="29" width="68" height="7" fill="${pRenk.detay}" stroke="${pRenk.kenar}" stroke-width="2"/>
+                   <ellipse cx="110" cy="37" rx="50" ry="9" fill="${pRenk.dolgu}" stroke="${pRenk.kenar}" stroke-width="3.5"/>`
+                : "";
+
+            return `
+                <svg viewBox="0 0 220 242" preserveAspectRatio="xMidYMid meet">
+                    <circle cx="110" cy="124" r="94" fill="#e0f2fe" opacity="0.7"/>
+                    ${arkaSacSvg}
+                    ${altSvg}
+                    ${ayakkabiSvg}
+                    ${ustSvg}
+                    <!-- Boyun ve Kafa -->
+                    <rect x="100" y="74" width="20" height="19" rx="7" fill="${ogr.ten}"/>
+                    <circle cx="110" cy="56" r="31" fill="${ogr.ten}" stroke="#ea580c" stroke-width="2.5"/>
+                    <!-- Ön Saç -->
+                    <path d="M79 52 C77 24, 143 24, 141 52 C133 36, 120 35, 110 41 C100 35, 87 36, 79 52 Z" fill="${ogr.sac}"/>
+                    ${sapkaSvg}
+                    <!-- Yüz İfadesi -->
+                    <circle cx="98" cy="57" r="3.8" fill="#1e293b"/>
+                    <circle cx="122" cy="57" r="3.8" fill="#1e293b"/>
+                    <circle cx="90" cy="64" r="4.2" fill="#fca5a5" opacity="0.65"/>
+                    <circle cx="130" cy="64" r="4.2" fill="#fca5a5" opacity="0.65"/>
+                    <path d="M99 68 Q110 77 121 68" fill="none" stroke="#9a3412" stroke-width="3.2" stroke-linecap="round"/>
+                </svg>`;
+        }
+
+        // ============================================================
+        // 6. ARAYÜZ GÜNCELLEME VE OYUN MANTIĞI
+        // ============================================================
+        function numaraCubugunuGuncelle() {
+            const cubuk = document.getElementById("numara-cubugu");
+            cubuk.innerHTML = "";
+
+            let dogruSayisi = 0;
+            let tekrarSayisi = 0;
+
+            OGRENCILER.forEach((ogr, idx) => {
+                if (ogr.durum === "dogru") dogruSayisi++;
+                if (ogr.durum === "tekrar") tekrarSayisi++;
+
+                const btn = document.createElement("button");
+                btn.id = `num-btn-${idx}`;
+                btn.textContent = ogr.id;
+                btn.title = `${ogr.id} - ${ogr.ad}`;
+                btn.onclick = () => {
+                    if (karistiriliyorMu) return;
+                    tikSesi();
+                    kartiYukle(idx);
+                };
+
+                let siniflar = "numara-buton";
+                if (ogr.durum === "dogru") siniflar += " durum-dogru";
+                if (ogr.durum === "tekrar") siniflar += " durum-tekrar";
+                if (idx === aktifIndeks) siniflar += " aktif-kart";
+
+                btn.className = siniflar;
+                cubuk.appendChild(btn);
+            });
+
+            document.getElementById("puan-dogru").textContent = `✅ ${dogruSayisi}`;
+            document.getElementById("puan-tekrar").textContent = `🔄 ${tekrarSayisi}`;
+        }
+
+        function kartiYukle(indeks) {
+            aktifIndeks = indeks;
+            cevapAcikMi = false;
+            const ogr = OGRENCILER[aktifIndeks];
+
+            // Sol panel bilgileri
+            document.getElementById("arkadas-balonu").textContent = `💬 Benim arkadaşım ${ogr.ad}`;
+            document.getElementById("karakter-svg-alani").innerHTML = karakterSvgOlustur(ogr);
+            document.getElementById("kart-numara-etiket").textContent = `${ogr.id} / ${OGRENCILER.length}`;
+            document.getElementById("karakter-ad-etiket").textContent = ogr.ad;
+
+            // Sağ panel ipuçları
+            document.getElementById("ipucu-olumsuz-svg").innerHTML = kiyafetSvgOlustur(ogr.negTur, ogr.negRenk);
+            document.getElementById("ipucu-olumsuz-yazi").textContent = ogr.negMetin;
+
+            document.getElementById("ipucu-olumlu-svg").innerHTML = kiyafetSvgOlustur(ogr.posTur, ogr.posRenk);
+            document.getElementById("ipucu-olumlu-yazi").textContent = ogr.posMetin;
+
+            // Cevap metinleri
+            document.getElementById("cumle-1-metin").textContent = ogr.cumle1;
+            document.getElementById("cumle-2-metin").textContent = ogr.cumle2;
+
+            cevapGorunumunuGuncelle();
+            numaraCubugunuGuncelle();
+
+            // Sahne geçiş animasyonu
+            const sahne = document.getElementById("ana-sahne");
+            sahne.classList.remove("sahne-yenile");
+            void sahne.offsetWidth;
+            sahne.classList.add("sahne-yenile");
+        }
+
+        function cevapGorunumunuGuncelle() {
+            const kutu = document.getElementById("cevap-kutusu");
+            const gizli = document.getElementById("cevap-gizli-icerik");
+            const acik = document.getElementById("cevap-acik-icerik");
+            const btnIkon = document.getElementById("cevap-buton-ikon");
+            const btnYazi = document.getElementById("cevap-buton-yazi");
+
+            if (cevapAcikMi) {
+                kutu.className = "cevap-alani cevap-acik";
+                gizli.classList.add("hidden");
+                acik.classList.remove("hidden");
+                btnIkon.textContent = "🙈";
+                btnYazi.textContent = "Cevabı Gizle";
+            } else {
+                kutu.className = "cevap-alani cevap-gizli";
+                gizli.classList.remove("hidden");
+                acik.classList.add("hidden");
+                btnIkon.textContent = "👀";
+                btnYazi.textContent = "Cevabı Göster";
+            }
+        }
+
+        function cevabiAcKapat() {
+            cevapAcikMi = !cevapAcikMi;
+            if (cevapAcikMi) {
+                kartAcilisSesi();
+            } else {
+                tikSesi();
+            }
+            cevapGorunumunuGuncelle();
+        }
+
+        function oncekiKart() {
+            if (karistiriliyorMu) return;
+            tikSesi();
+            kartiYukle((aktifIndeks - 1 + OGRENCILER.length) % OGRENCILER.length);
+        }
+
+        function sonrakiKart() {
+            if (karistiriliyorMu) return;
+            tikSesi();
+            kartiYukle((aktifIndeks + 1) % OGRENCILER.length);
+        }
+
+        function durumIsaretle(yeniDurum, olay) {
+            const ogr = OGRENCILER[aktifIndeks];
+            ogr.durum = yeniDurum;
+
+            if (yeniDurum === "dogru") {
+                dogruCevapSesi();
+                kutlamaParcaciklari(olay);
+            } else {
+                tekrarUyariSesi();
+            }
+
+            // Cevap henüz açılmadıysa öğrenciye göster
+            if (!cevapAcikMi) {
+                cevapAcikMi = true;
+                cevapGorunumunuGuncelle();
+            }
+
+            numaraCubugunuGuncelle();
+        }
+
+        function rastgeleSec() {
+            if (karistiriliyorMu) return;
+
+            // Önce henüz "Doğru" yapılmamış öğrencilerden seç
+            let adaylar = OGRENCILER
+                .map((o, i) => (o.durum !== "dogru" ? i : -1))
+                .filter(i => i !== -1);
+
+            if (adaylar.length === 0) {
+                adaylar = OGRENCILER.map((_, i) => i);
+            }
+
+            const hedefIndeks = adaylar[Math.floor(Math.random() * adaylar.length)];
+            karistiriliyorMu = true;
+
+            let adim = 0;
+            const toplamAdim = 12;
+
+            const zamanlayici = setInterval(() => {
+                document.querySelectorAll(".numara-buton").forEach(b => b.classList.remove("secim-parlama"));
+                const geciciIdx = Math.floor(Math.random() * OGRENCILER.length);
+                const geciciBtn = document.getElementById(`num-btn-${geciciIdx}`);
+                if (geciciBtn) geciciBtn.classList.add("secim-parlama");
+                tikSesi();
+
+                adim++;
+                if (adim >= toplamAdim) {
+                    clearInterval(zamanlayici);
+                    document.querySelectorAll(".numara-buton").forEach(b => b.classList.remove("secim-parlama"));
+                    const hedefBtn = document.getElementById(`num-btn-${hedefIndeks}`);
+                    if (hedefBtn) hedefBtn.classList.add("secim-parlama");
+                    kartAcilisSesi();
+
+                    setTimeout(() => {
+                        if (hedefBtn) hedefBtn.classList.remove("secim-parlama");
+                        karistiriliyorMu = false;
+                        kartiYukle(hedefIndeks);
+                    }, 320);
+                }
+            }, 70);
+        }
+
+        function kutlamaParcaciklari(olay) {
+            if (!olay || !olay.currentTarget) return;
+            const simgeler = ["⭐", "🌟", "✨", "🎉"];
+            const rect = olay.currentTarget.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top;
+
+            for (let i = 0; i < 6; i++) {
+                const el = document.createElement("div");
+                el.className = "parcacik text-xl sm:text-2xl";
+                el.textContent = simgeler[i % simgeler.length];
+                el.style.left = `${x + (Math.random() - 0.5) * 110}px`;
+                el.style.top = `${y - 10}px`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 780);
+            }
+        }
+
+        function tumunuSifirla() {
+            if (karistiriliyorMu) return;
+            OGRENCILER.forEach(o => { o.durum = "bekliyor"; });
+            tikSesi();
+            kartiYukle(0);
+        }
+
+        // Klavye kısayolları (Akıllı tahta kumandası / klavye desteği)
+        document.addEventListener("keydown", (e) => {
+            const baslangic = document.getElementById("baslangic-ekrani");
+            if (baslangic && baslangic.style.display !== "none") {
+                if (e.key === "Enter" || e.key === " ") oyunuBaslat();
+                return;
+            }
+            if (e.key === "ArrowRight") sonrakiKart();
+            else if (e.key === "ArrowLeft") oncekiKart();
+            else if (e.key === " ") {
+                e.preventDefault();
+                cevabiAcKapat();
+            }
+        });
+
+        window.onload = function () {
+            kartiYukle(0);
+        };
+    </script>
+</body>
+</html>
