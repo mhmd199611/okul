@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bulunma Durumu Oyunu (-da / -de / -ta / -te)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap');
+
+    :root {
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --card-bg: #ffffff;
+      --primary: #5b46e8;
+      --primary-hover: #4732d1;
+      --accent: #ff9f1c;
+      --correct: #10b981;
+      --correct-bg: #d1fae5;
+      --wrong: #ef4444;
+      --wrong-bg: #fee2e2;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      font-family: 'Fredoka', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(8px, 2vw, 20px);
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 680px;
+      height: 100%;
+      max-height: 92dvh;
+      background: var(--card-bg);
+      border-radius: clamp(20px, 4vw, 32px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(14px, 3vh, 28px) clamp(16px, 4vw, 32px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* الشاشات */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* شاشة البداية */
+    #start-screen {
+      justify-content: center;
+      gap: clamp(14px, 3vh, 26px);
+    }
+
+    .badge-title {
+      background: #fef3c7;
+      color: #d97706;
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-size: clamp(0.85rem, 2.2vw, 1.05rem);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .game-title {
+      font-size: clamp(1.8rem, 5.5vw, 2.8rem);
+      color: var(--text-dark);
+      line-height: 1.2;
+    }
+
+    .game-title span {
+      color: var(--primary);
+      display: block;
+      font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+      margin-top: 4px;
+    }
+
+    .rule-pill-box {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      background: #f8fafc;
+      padding: clamp(10px, 2vh, 16px);
+      border-radius: 20px;
+      border: 2px dashed #cbd5e1;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .pill {
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      color: #fff;
+    }
+    .pill.da { background: #3b82f6; }
+    .pill.de { background: #8b5cf6; }
+    .pill.ta { background: #ec4899; }
+    .pill.te { background: #f59e0b; }
+
+    .btn-main {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: clamp(14px, 2.5vh, 20px) clamp(32px, 7vw, 52px);
+      font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+      font-family: inherit;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-2px) scale(1.03);
+    }
+
+    .btn-main:active {
+      transform: translateY(2px) scale(0.98);
+    }
+
+    /* شاشة اللعب */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .stat-box {
+      background: #f1f5f9;
+      padding: clamp(6px, 1.2vh, 10px) clamp(12px, 2.5vw, 18px);
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .stat-box.score {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    .progress-wrapper {
+      flex: 1;
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 5%;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      border-radius: 10px;
+      transition: width 0.35s ease;
+    }
+
+    /* بطاقة السؤال */
+    .question-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin: clamp(6px, 1.5vh, 14px) 0;
+      background: #f8fafc;
+      border-radius: 24px;
+      border: 2px solid #e2e8f0;
+      padding: clamp(10px, 2vh, 20px);
+    }
+
+    .question-hint {
+      font-size: clamp(0.85rem, 2.2vw, 1rem);
+      color: var(--text-muted);
+      margin-bottom: clamp(4px, 1vh, 10px);
+      font-weight: 600;
+    }
+
+    .question-text {
+      font-size: clamp(1.35rem, 4.2vw, 2.1rem);
+      font-weight: 700;
+      color: var(--text-dark);
+      line-height: 1.35;
+    }
+
+    .blank-slot {
+      display: inline-block;
+      min-width: 68px;
+      padding: 0 10px;
+      margin: 0 2px;
+      border-bottom: 4px dashed var(--primary);
+      color: var(--primary);
+      transition: all 0.25s ease;
+    }
+
+    .blank-slot.filled-correct {
+      border-bottom: 4px solid var(--correct);
+      color: var(--correct);
+    }
+
+    .blank-slot.filled-wrong {
+      border-bottom: 4px solid var(--wrong);
+      color: var(--wrong);
+    }
+
+    /* دوائر الاختيارات الثلاثة */
+    .options-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(14px, 4vw, 34px);
+      width: 100%;
+      padding: clamp(4px, 1vh, 10px) 0;
+    }
+
+    .option-circle {
+      width: clamp(82px, 19vw, 118px);
+      height: clamp(82px, 19vw, 118px);
+      border-radius: 50%;
+      border: 5px solid #cbd5e1;
+      background: #ffffff;
+      color: var(--text-dark);
+      font-family: inherit;
+      font-size: clamp(1.3rem, 3.8vw, 1.85rem);
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+      transition: transform 0.18s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .option-circle:hover:not(:disabled) {
+      transform: translateY(-4px) scale(1.05);
+      border-color: var(--primary);
+      box-shadow: 0 12px 24px rgba(91, 70, 232, 0.2);
+    }
+
+    .option-circle:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+
+    .option-circle:disabled {
+      cursor: default;
+    }
+
+    /* حالات الإجابة للدوائر */
+    .option-circle.correct-choice {
+      border: 7px solid var(--correct) !important;
+      background-color: var(--correct-bg) !important;
+      color: #065f46 !important;
+      box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.25), 0 10px 25px rgba(16, 185, 129, 0.35) !important;
+      transform: scale(1.08);
+    }
+
+    .option-circle.wrong-choice {
+      border: 7px solid var(--wrong) !important;
+      background-color: var(--wrong-bg) !important;
+      color: #991b1b !important;
+      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.22) !important;
+    }
+
+    /* تأثير الاهتزاز الخفيف */
+    @keyframes gentleShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    .shake {
+      animation: gentleShake 0.42s ease-in-out;
+    }
+
+    /* منطقة الزر السفلي عند الخطأ */
+    .footer-action {
+      height: clamp(50px, 8vh, 66px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .btn-next {
+      display: none;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+      border: none;
+      padding: clamp(10px, 1.8vh, 14px) clamp(26px, 5vw, 40px);
+      font-size: clamp(1.05rem, 3vw, 1.3rem);
+      font-family: inherit;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+      transition: transform 0.15s ease;
+    }
+
+    .btn-next.visible {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      animation: popIn 0.25s ease;
+    }
+
+    .btn-next:hover {
+      transform: scale(1.04);
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.85); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* شاشة النهاية */
+    #end-screen {
+      justify-content: center;
+      gap: clamp(14px, 3vh, 24px);
+    }
+
+    .trophy-icon {
+      font-size: clamp(3.5rem, 10vw, 5rem);
+      line-height: 1;
+    }
+
+    .final-score-box {
+      background: #f1f5f9;
+      padding: clamp(14px, 2.5vh, 22px) clamp(24px, 6vw, 44px);
+      border-radius: 24px;
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .final-msg {
+      font-size: clamp(1rem, 2.8vw, 1.25rem);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container" id="app-card">
+    
+    <!-- 1. شاشة البداية -->
+    <div id="start-screen" class="screen active">
+      <div class="badge-title">Türkçe Dil Bilgisi Oyunu</div>
+      <h1 class="game-title">
+        Bulunma Durumu
+        <span>(-da / -de / -ta / -te)</span>
+      </h1>
+      <div class="rule-pill-box">
+        <span class="pill da">-da</span>
+        <span class="pill de">-de</span>
+        <span class="pill ta">-ta</span>
+        <span class="pill te">-te</span>
+      </div>
+      <p style="color: var(--text-muted); font-size: clamp(0.95rem, 2.5vw, 1.15rem); max-width: 420px;">
+        20 soruda doğru eki seç, puanları topla!
+      </p>
+      <button id="start-btn" class="btn-main">Oyuna Başla ▶</button>
+    </div>
+
+    <!-- 2. شاشة اللعب -->
+    <div id="quiz-screen" class="screen">
+      <div class="top-bar">
+        <div class="stat-box" id="question-counter">1 / 20</div>
+        <div class="progress-wrapper">
+          <div class="progress-fill" id="progress-bar"></div>
+        </div>
+        <div class="stat-box score">⭐ <span id="score-display">0</span></div>
+      </div>
+
+      <div class="question-area" id="question-box">
+        <div class="question-hint">Doğru eki seçiniz:</div>
+        <div class="question-text" id="question-text">
+          ...
+        </div>
+      </div>
+
+      <div class="options-container" id="options-container">
+        <!-- الدوائر الثلاث تُنشأ برمجياً -->
+      </div>
+
+      <div class="footer-action">
+        <button id="next-btn" class="btn-next">Sonraki Soru ➔</button>
+      </div>
+    </div>
+
+    <!-- 3. شاشة النهاية -->
+    <div id="end-screen" class="screen">
+      <div class="trophy-icon" id="end-emoji">🏆</div>
+      <h2 class="game-title" style="font-size: clamp(1.6rem, 4.5vw, 2.4rem);">Oyun Bitti!</h2>
+      <div class="final-score-box">
+        Toplam Puan: <span id="final-score">0</span> / 200
+      </div>
+      <p class="final-msg" id="final-message">Harika iş çıkardın!</p>
+      <button id="restart-btn" class="btn-main">Tekrar Oyna ↻</button>
+    </div>
+
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. نظام المؤثرات الصوتية (Web Audio API)
+    // ==========================================
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playCorrectSound() {
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+
+      notes.forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + index * 0.08);
+
+        gain.gain.setValueAtTime(0.001, now + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + index * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.25);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now + index * 0.08);
+        osc.stop(now + index * 0.08 + 0.26);
+      });
+    }
+
+    function playWrongSound() {
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const notes = [311.13, 233.08]; // D#4 -> A#3
+
+      notes.forEach((freq, index) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now + index * 0.16);
+
+        gain.gain.setValueAtTime(0.001, now + index * 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + index * 0.16 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.16 + 0.28);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now + index * 0.16);
+        osc.stop(now + index * 0.16 + 0.3);
+      });
+    }
+
+    // ==========================================
+    // 2. بنك الأسئلة (20 سؤالاً: جمل اسمية + فعل مضارع مستمر)
+    // ==========================================
+    const questionsBank = [
+      { before: "Kitaplar çanta", after: " duruyor.", correct: "-da", options: ["-da", "-de", "-ta"] },
+      { before: "Annem şimdi ev", after: " yemek yapıyor.", correct: "-de", options: ["-da", "-de", "-te"] },
+      { before: "Öğrenciler sınıf", after: " ders dinliyor.", correct: "-ta", options: ["-da", "-ta", "-te"] },
+      { before: "Babam bugün iş", after: " çalışıyor.", correct: "-te", options: ["-de", "-ta", "-te"] },
+      { before: "Çocuklar park", after: " oyun oynuyor.", correct: "-ta", options: ["-da", "-de", "-ta"] },
+      { before: "Kedi sıcak koltuk", after: " uyuyor.", correct: "-ta", options: ["-da", "-ta", "-te"] },
+      { before: "Kalemim senin masa", after: " var.", correct: "-da", options: ["-da", "-de", "-ta"] },
+      { before: "Yolcular otobüs", after: " bekliyor.", correct: "-te", options: ["-de", "-ta", "-te"] },
+      { before: "Ali ve Ayşe şimdi İstanbul'", after: " yaşıyor.", correct: "da", options: ["da", "de", "ta"] },
+      { before: "Kırmızı defter Ahmet'", after: " var.", correct: "te", options: ["de", "ta", "te"] },
+      { before: "Kuşlar yüksek ağaç", after: " ötüyor.", correct: "-ta", options: ["-da", "-ta", "-te"] },
+      { before: "Süt ve peynir dolap", after: " duruyor.", correct: "-ta", options: ["-da", "-de", "-ta"] },
+      { before: "Arkadaşlarım sinema", after: " film izliyor.", correct: "-da", options: ["-da", "-de", "-ta"] },
+      { before: "Balıklar temiz deniz", after: " yüzüyor.", correct: "-de", options: ["-da", "-de", "-te"] },
+      { before: "Doktorlar hastane", after: " çalışıyor.", correct: "-de", options: ["-da", "-de", "-te"] },
+      { before: "Dedem şu an mutfak", after: " çay içiyor.", correct: "-ta", options: ["-da", "-ta", "-te"] },
+      { before: "Türkiye'", after: " çok güzel şehirler var.", correct: "de", options: ["da", "de", "te"] },
+      { before: "Dersimiz saat üç", after: " başlıyor.", correct: "-te", options: ["-de", "-ta", "-te"] },
+      { before: "Renkli çiçekler bahçe", after: " çok güzel.", correct: "-de", options: ["-da", "-de", "-te"] },
+      { before: "Silgim benim cebim", after: " değil, sende.", correct: "-de", options: ["-da", "-de", "-te"] }
+    ];
+
+    // دالة خلط عشوائية (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // ==========================================
+    // 3. منطق اللعبة والتفاعل
+    // ==========================================
+    let shuffledQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let isAnswered = false;
+    let autoNextTimer = null;
+
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const endScreen = document.getElementById('end-screen');
+
+    const startBtn = document.getElementById('start-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    const questionCounter = document.getElementById('question-counter');
+    const progressBar = document.getElementById('progress-bar');
+    const scoreDisplay = document.getElementById('score-display');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const appCard = document.getElementById('app-card');
+
+    function showScreen(screen) {
+      [startScreen, quizScreen, endScreen].forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+    }
+
+    function startGame() {
+      initAudio();
+      shuffledQuestions = shuffleArray(questionsBank); // خلط الأسئلة عشوائياً
+      currentIndex = 0;
+      score = 0;
+      scoreDisplay.textContent = score;
+      showScreen(quizScreen);
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      clearTimeout(autoNextTimer);
+      isAnswered = false;
+      nextBtn.classList.remove('visible');
+
+      const q = shuffledQuestions[currentIndex];
+      questionCounter.textContent = `${currentIndex + 1} / ${shuffledQuestions.length}`;
+      progressBar.style.width = `${((currentIndex + 1) / shuffledQuestions.length) * 100}%`;
+
+      questionText.innerHTML = `${q.before}<span class="blank-slot" id="blank-slot">...</span>${q.after}`;
+
+      optionsContainer.innerHTML = '';
+      const randomOptions = shuffleArray(q.options); // خلط أماكن الدوائر الثلاث عشوائياً أيضاً
+      randomOptions.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-circle';
+        btn.textContent = opt;
+        btn.onclick = () => handleAnswer(opt, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedOpt, clickedBtn) {
+      if (isAnswered) return;
+      isAnswered = true;
+
+      const q = shuffledQuestions[currentIndex];
+      const blankSlot = document.getElementById('blank-slot');
+      const allButtons = optionsContainer.querySelectorAll('.option-circle');
+
+      allButtons.forEach(b => b.disabled = true);
+
+      if (selectedOpt === q.correct) {
+        playCorrectSound();
+        clickedBtn.classList.add('correct-choice');
+        blankSlot.textContent = q.correct;
+        blankSlot.classList.add('filled-correct');
+
+        score += 10;
+        scoreDisplay.textContent = score;
+
+        autoNextTimer = setTimeout(() => {
+          goToNextQuestion();
+        }, 1200);
+
+      } else {
+        playWrongSound();
+        clickedBtn.classList.add('wrong-choice');
+        blankSlot.textContent = selectedOpt;
+        blankSlot.classList.add('filled-wrong');
+
+        allButtons.forEach(btn => {
+          if (btn.textContent === q.correct) {
+            btn.classList.add('correct-choice');
+          }
+        });
+
+        appCard.classList.remove('shake');
+        void appCard.offsetWidth;
+        appCard.classList.add('shake');
+
+        nextBtn.classList.add('visible');
+      }
+    }
+
+    function goToNextQuestion() {
+      currentIndex++;
+      if (currentIndex < shuffledQuestions.length) {
+        loadQuestion();
+      } else {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      showScreen(endScreen);
+      document.getElementById('final-score').textContent = score;
+
+      const emoji = document.getElementById('end-emoji');
+      const msg = document.getElementById('final-message');
+
+      if (score >= 170) {
+        emoji.textContent = '🏆';
+        msg.textContent = 'Mükemmel! Bulunma durumunu çok iyi öğrendin!';
+      } else if (score >= 120) {
+        emoji.textContent = '🌟';
+        msg.textContent = 'Çok güzel! Biraz daha pratikle harika olacaksın!';
+      } else {
+        emoji.textContent = '💪';
+        msg.textContent = 'İyi deneme! Tekrar oynayarak puanını artırabilirsin!';
+      }
+    }
+
+    startBtn.addEventListener('click', startGame);
+    nextBtn.addEventListener('click', goToNextQuestion);
+    restartBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
