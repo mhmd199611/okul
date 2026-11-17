@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="tool">
+  <meta name="design-style" content="sticker">
+  <title>Trafik İşaretleri Oyunu — 2. Sınıf</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* 1. Sticker style tokens */
+      --background: #fef7ff;
+      --surface-container-low: #ffffff;
+      --surface-container: #f8eef8;
+      --surface-container-high: #f2e8f2;
+
+      --on-surface: #2e1a28;
+      --on-surface-variant: #604868;
+
+      --outline: #907898;
+      --outline-variant: #dcc8e0;
+
+      --primary: #c2207f;
+      --on-primary: #ffffff;
+      --primary-container: #f080c0;
+      --on-primary-container: #2e1a28;
+      --secondary: #7c52aa;
+      --tertiary: #0096cc;
+      --error: #c53030;
+      --on-error: #ffffff;
+
+      --data-1: #c2207f;
+      --data-2: #7c52aa;
+      --data-3: #0096cc;
+      --data-4: #d96a00;
+      --data-context: #c8b8d0;
+
+      --font-headline: 'DM Sans', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-label: 'DM Sans', sans-serif;
+
+      --rounded: 1rem;
+      --rounded-lg: 2rem;
+      --rounded-full: 9999px;
+
+      --shadow-pink: 0 4px 16px rgb(224 64 160 / 0.2);
+      --shadow-pink-deep: 0 10px 28px rgb(224 64 160 / 0.32);
+      --shadow-grape: 0 4px 16px rgb(124 82 170 / 0.2);
+      --shadow-sky: 0 4px 16px rgb(0 150 204 / 0.2);
+      --pop-scale: scale(1.03);
+      --lift: translateY(-4px);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      /* 2. Shared semantic, focus, type scale, spacing & motion tokens */
+      --positive: #15803d;
+      --positive-bright: #16a34a;
+      --positive-surface: #dcfce7;
+      --on-positive: #ffffff;
+      --shadow-positive-glow: 0 0 0 4px rgb(34 197 94 / 0.36), 0 8px 24px rgb(22 163 74 / 0.28);
+
+      --error-surface: #fee2e2;
+      --shadow-error: 0 0 0 4px rgb(197 48 48 / 0.22), 0 6px 18px rgb(197 48 48 / 0.22);
+
+      --warning: #d96a00;
+      --warning-surface: #ffedd5;
+      --focus: #c2207f;
+
+      /* Official Turkish traffic sign palette */
+      --sign-red: #d91e2a;
+      --sign-blue: #005ca9;
+      --sign-white: #ffffff;
+      --sign-black: #18181b;
+      --sign-yellow: #facc15;
+      --sign-green: #16a34a;
+      --sign-shadow: rgb(46 26 40 / 0.14);
+
+      /* Tighter tool type scale adapted for 2nd graders */
+      --display-size: clamp(1.35rem, 1.05rem + 1.4vw, 2rem);
+      --headline-size: clamp(1.125rem, 1rem + 0.65vw, 1.45rem);
+      --subhead-size: clamp(0.95rem, 0.88rem + 0.35vw, 1.15rem);
+      --body-size: clamp(0.9375rem, 0.88rem + 0.25vw, 1.0625rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale (4pt base) */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.5rem;
+      --space-2xl: 4rem;
+      --space-3xl: 6rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 220ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow-x: clip;
+      overflow-y: hidden;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100dvh;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      position: static !important;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Full-viewport app shell: zero vertical scroll */
+    .app-shell {
+      height: 100vh;
+      height: 100dvh;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: clamp(0.5rem, 1.5vh, 1.15rem) clamp(0.65rem, 2.2vw, 1.5rem);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: clamp(0.5rem, 1.4vh, 1rem);
+      overflow: hidden;
+    }
+
+    .app-shell * {
+      min-width: 0;
+    }
+
+    /* Top Header Card */
+    .top-bar {
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--shadow-pink);
+      padding: clamp(0.45rem, 1vh, 0.75rem) clamp(0.75rem, 2vw, 1.25rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      flex-wrap: nowrap;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      flex-shrink: 1;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-weight: 900;
+      font-size: var(--display-size);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: var(--on-surface);
+      white-space: nowrap;
+    }
+
+    .brand-title em {
+      font-style: normal;
+      color: var(--primary);
+    }
+
+    .grade-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.65rem;
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .hud-group {
+      display: flex;
+      align-items: center;
+      gap: clamp(0.35rem, 1vw, 0.65rem);
+      flex-shrink: 0;
+    }
+
+    .hud-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      font-weight: 700;
+      font-size: clamp(0.8125rem, 0.76rem + 0.25vw, 0.95rem);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .hud-pill--progress {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.2rem;
+      padding: 0.3rem 0.75rem;
+    }
+
+    .progress-text {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      line-height: 1.1;
+    }
+
+    .progress-track {
+      width: clamp(64px, 10vw, 110px);
+      height: 7px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-high);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: var(--rounded-full);
+      background: var(--tertiary);
+      transition: width var(--dur-short) var(--ease-out);
+    }
+
+    .hud-pill--score {
+      background: var(--surface-container);
+      color: var(--on-surface);
+      box-shadow: var(--shadow-grape);
+    }
+
+    .score-star {
+      color: var(--warning);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .score-value {
+      color: var(--primary);
+      font-weight: 900;
+    }
+
+    .sound-btn {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--secondary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-grape);
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .sound-btn:hover {
+      transform: var(--pop-scale);
+      background: var(--surface-container-high);
+    }
+
+    .sound-btn:active {
+      transform: scale(0.96);
+    }
+
+    .sound-btn[aria-pressed="false"] {
+      color: var(--on-surface-variant);
+      opacity: 0.8;
+    }
+
+    /* Main Content Area */
+    .stage-container {
+      min-height: 0;
+      height: 100%;
+      display: grid;
+      position: relative;
+    }
+
+    /* Quiz Stage: 2-column on desktop/landscape, compact vertical stack on mobile */
+    .quiz-stage {
+      min-height: 0;
+      height: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      grid-template-rows: minmax(0, 1fr);
+      gap: clamp(0.65rem, 1.8vw, 1.35rem);
+      align-items: stretch;
+    }
+
+    .quiz-stage.is-hidden,
+    .summary-stage.is-hidden {
+      display: none;
+    }
+
+    /* Sign Showcase Card */
+    .sign-card {
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--shadow-sky);
+      padding: clamp(0.75rem, 2vh, 1.5rem);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(0.45rem, 1.4vh, 1rem);
+      text-align: center;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sign-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--secondary);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .sign-frame {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(0.25rem, 0.8vh, 0.5rem);
+      background: var(--surface-container);
+      border-radius: var(--rounded-lg);
+    }
+
+    .sign-svg-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      max-height: clamp(110px, 34vh, 250px);
+      animation: sign-pop var(--dur-long) var(--ease-bounce);
+    }
+
+    .sign-svg-wrap svg {
+      height: 100%;
+      width: auto;
+      max-width: 100%;
+      max-height: clamp(110px, 34vh, 250px);
+      filter: drop-shadow(0 6px 12px var(--sign-shadow));
+    }
+
+    .question-prompt {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-weight: 800;
+      font-size: var(--headline-size);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--on-surface);
+    }
+
+    /* Options & Action Column */
+    .answer-column {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: clamp(0.5rem, 1.3vh, 0.85rem);
+      align-content: center;
+    }
+
+    .options-list {
+      display: grid;
+      grid-template-rows: repeat(3, minmax(46px, 1fr));
+      gap: clamp(0.45rem, 1.2vh, 0.85rem);
+      min-height: 0;
+      align-content: center;
+    }
+
+    .option-card {
+      width: 100%;
+      min-height: 48px;
+      padding: clamp(0.5rem, 1.2vh, 0.85rem) clamp(0.75rem, 1.8vw, 1.15rem);
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-low);
+      box-shadow: var(--shadow-pink);
+      outline: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      text-align: left;
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  box-shadow var(--dur-short) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out),
+                  outline-color var(--dur-micro) var(--ease-out);
+    }
+
+    .option-card:nth-child(2) {
+      box-shadow: var(--shadow-sky);
+    }
+
+    .option-card:nth-child(3) {
+      box-shadow: var(--shadow-grape);
+    }
+
+    .option-card:not(:disabled):hover {
+      transform: var(--lift);
+      box-shadow: var(--shadow-pink-deep);
+    }
+
+    .option-card:not(:disabled):active {
+      transform: scale(0.98);
+    }
+
+    .option-card:disabled {
+      cursor: default;
+    }
+
+    .option-main {
+      display: flex;
+      align-items: center;
+      gap: clamp(0.5rem, 1.4vw, 0.85rem);
+      min-width: 0;
+    }
+
+    .option-letter {
+      width: clamp(30px, 4.2vh, 38px);
+      height: clamp(30px, 4.2vh, 38px);
+      flex-shrink: 0;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--secondary);
+      font-weight: 800;
+      font-size: var(--subhead-size);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .option-label {
+      font-family: var(--font-headline);
+      font-weight: 700;
+      font-size: clamp(0.95rem, 0.85rem + 0.55vw, 1.2rem);
+      line-height: 1.2;
+      color: var(--on-surface);
+    }
+
+    .option-status-icon {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      border-radius: var(--rounded-full);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity var(--dur-short) var(--ease-out),
+                  transform var(--dur-short) var(--ease-bounce);
+    }
+
+    /* Correct State: glowing green frame */
+    .option-card.is-correct {
+      background: var(--positive-surface);
+      outline: 3px solid var(--positive-bright);
+      box-shadow: var(--shadow-positive-glow);
+      transform: var(--pop-scale);
+    }
+
+    .option-card.is-correct .option-letter {
+      background: var(--positive);
+      color: var(--on-positive);
+    }
+
+    .option-card.is-correct .option-status-icon {
+      opacity: 1;
+      transform: scale(1);
+      background: var(--positive);
+      color: var(--on-positive);
+    }
+
+    /* Incorrect State: red frame + gentle shake */
+    .option-card.is-wrong {
+      background: var(--error-surface);
+      outline: 3px solid var(--error);
+      box-shadow: var(--shadow-error);
+      animation: gentle-shake 420ms var(--ease-in-out);
+    }
+
+    .option-card.is-wrong .option-letter {
+      background: var(--error);
+      color: var(--on-error);
+    }
+
+    .option-card.is-wrong .option-status-icon {
+      opacity: 1;
+      transform: scale(1);
+      background: var(--error);
+      color: var(--on-error);
+    }
+
+    .option-card.is-muted {
+      opacity: 0.62;
+    }
+
+    /* Reserved Feedback & Next Question Bar (prevents layout shift & overflow) */
+    .feedback-bar {
+      min-height: 54px;
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-full);
+      box-shadow: var(--shadow-grape);
+      padding: 0.45rem 0.65rem 0.45rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      transition: background-color var(--dur-short) var(--ease-out),
+                  box-shadow var(--dur-short) var(--ease-out);
+    }
+
+    .feedback-bar.is-correct {
+      background: var(--positive-surface);
+      box-shadow: var(--shadow-positive-glow);
+    }
+
+    .feedback-bar.is-wrong {
+      background: var(--error-surface);
+      box-shadow: var(--shadow-error);
+    }
+
+    .feedback-msg {
+      margin: 0;
+      font-weight: 700;
+      font-size: clamp(0.84rem, 0.8rem + 0.25vw, 0.98rem);
+      color: var(--on-surface-variant);
+      line-height: 1.25;
+    }
+
+    .feedback-bar.is-correct .feedback-msg {
+      color: var(--positive);
+    }
+
+    .feedback-bar.is-wrong .feedback-msg {
+      color: var(--error);
+    }
+
+    .btn-next {
+      flex-shrink: 0;
+      min-height: 44px;
+      padding: 0.5rem 1.15rem;
+      border-radius: var(--rounded-full);
+      background: var(--primary);
+      color: var(--on-primary);
+      font-weight: 800;
+      font-size: clamp(0.85rem, 0.8rem + 0.25vw, 0.98rem);
+      box-shadow: var(--shadow-pink);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      white-space: nowrap;
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  box-shadow var(--dur-short) var(--ease-out);
+    }
+
+    .btn-next.is-hidden {
+      display: none;
+    }
+
+    .btn-next:hover {
+      transform: var(--pop-scale);
+      box-shadow: var(--shadow-pink-deep);
+    }
+
+    .btn-next:active {
+      transform: scale(0.97);
+    }
+
+    /* End-of-Game Summary Stage */
+    .summary-stage {
+      min-height: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .summary-card {
+      width: 100%;
+      max-height: 100%;
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--shadow-pink-deep);
+      padding: clamp(0.85rem, 2vh, 1.5rem) clamp(0.9rem, 2.5vw, 1.75rem);
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      gap: clamp(0.55rem, 1.4vh, 1rem);
+      text-align: center;
+      overflow: hidden;
+      animation: sign-pop var(--dur-long) var(--ease-bounce);
+    }
+
+    .summary-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .trophy-badge {
+      width: clamp(44px, 6.5vh, 60px);
+      height: clamp(44px, 6.5vh, 60px);
+      border-radius: var(--rounded-full);
+      background: var(--primary-container);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-pink);
+    }
+
+    .summary-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-weight: 900;
+      font-size: clamp(1.25rem, 1rem + 1.1vw, 1.75rem);
+      letter-spacing: -0.02em;
+      color: var(--on-surface);
+    }
+
+    .summary-title em {
+      font-style: normal;
+      color: var(--primary);
+    }
+
+    .summary-subtitle {
+      margin: 0;
+      color: var(--on-surface-variant);
+      font-size: clamp(0.85rem, 0.8rem + 0.2vw, 0.98rem);
+      font-weight: 500;
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(0.45rem, 1.2vw, 0.85rem);
+    }
+
+    .stat-tile {
+      background: var(--surface-container);
+      border-radius: var(--rounded);
+      padding: clamp(0.45rem, 1vh, 0.75rem) 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.1rem;
+    }
+
+    .stat-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--on-surface-variant);
+    }
+
+    .stat-value {
+      font-weight: 900;
+      font-size: clamp(1.1rem, 0.95rem + 0.8vw, 1.55rem);
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+      line-height: 1.1;
+    }
+
+    .stat-tile:nth-child(2) .stat-value {
+      color: var(--secondary);
+    }
+
+    .stat-tile:nth-child(3) .stat-value {
+      color: var(--positive);
+    }
+
+    /* 9-Sign Review Grid inside Summary */
+    .review-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(0.35rem, 1vh, 0.6rem);
+      align-content: center;
+      min-height: 0;
+    }
+
+    .review-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: clamp(0.3rem, 0.7vh, 0.5rem) 0.55rem;
+      border-radius: var(--rounded);
+      background: var(--surface-container);
+      text-align: left;
+      min-width: 0;
+    }
+
+    .review-chip.is-ok {
+      background: var(--positive-surface);
+    }
+
+    .review-chip.is-miss {
+      background: var(--error-surface);
+    }
+
+    .review-mini-sign {
+      width: clamp(26px, 3.6vh, 34px);
+      height: clamp(26px, 3.6vh, 34px);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .review-mini-sign svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .review-name {
+      flex: 1 1 auto;
+      font-size: clamp(0.7rem, 0.65rem + 0.2vw, 0.82rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--on-surface);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .review-mark {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: var(--rounded-full);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 900;
+    }
+
+    .review-chip.is-ok .review-mark {
+      background: var(--positive);
+      color: var(--on-positive);
+    }
+
+    .review-chip.is-miss .review-mark {
+      background: var(--error);
+      color: var(--on-error);
+    }
+
+    .summary-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-md);
+    }
+
+    .btn-play-again {
+      min-height: 48px;
+      padding: 0.65rem 1.85rem;
+      border-radius: var(--rounded-full);
+      background: var(--primary);
+      color: var(--on-primary);
+      font-weight: 800;
+      font-size: clamp(0.95rem, 0.9rem + 0.25vw, 1.1rem);
+      box-shadow: var(--shadow-pink);
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  box-shadow var(--dur-short) var(--ease-out);
+    }
+
+    .btn-play-again:hover {
+      transform: var(--pop-scale);
+      box-shadow: var(--shadow-pink-deep);
+    }
+
+    .btn-play-again:active {
+      transform: scale(0.97);
+    }
+
+    /* Animations */
+    @keyframes gentle-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(4px); }
+    }
+
+    @keyframes sign-pop {
+      0% {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Tablet & Mobile Responsive Layout: strict 100dvh, zero scroll */
+    @media (max-width: 760px) {
+      .quiz-stage {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
+        gap: clamp(0.45rem, 1.2vh, 0.75rem);
+      }
+
+      .sign-card {
+        padding: clamp(0.5rem, 1.2vh, 0.85rem) clamp(0.65rem, 2vw, 1rem);
+        gap: clamp(0.3rem, 0.8vh, 0.55rem);
+      }
+
+      .sign-svg-wrap,
+      .sign-svg-wrap svg {
+        max-height: clamp(88px, 21vh, 165px);
+      }
+
+      .question-prompt {
+        font-size: clamp(1rem, 0.9rem + 0.45vw, 1.2rem);
+      }
+
+      .options-list {
+        grid-template-rows: repeat(3, minmax(44px, auto));
+        gap: clamp(0.35rem, 0.9vh, 0.6rem);
+      }
+
+      .option-card {
+        min-height: 46px;
+        padding: clamp(0.4rem, 0.9vh, 0.65rem) 0.75rem;
+      }
+
+      .feedback-bar {
+        min-height: 48px;
+        padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grade-badge {
+        display: none;
+      }
+
+      .progress-track {
+        width: 54px;
+        height: 6px;
+      }
+
+      .hud-pill {
+        padding: 0.28rem 0.55rem;
+        font-size: 0.8rem;
+      }
+
+      .hud-pill--progress {
+        padding: 0.24rem 0.55rem;
+      }
+
+      .review-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .review-chip:last-child {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-height: 620px) and (max-width: 760px) {
+      .sign-kicker {
+        display: none;
+      }
+
+      .sign-svg-wrap,
+      .sign-svg-wrap svg {
+        max-height: clamp(78px, 19vh, 130px);
+      }
+
+      .summary-subtitle {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top HUD Bar -->
+    <header class="top-bar">
+      <div class="brand-group">
+        <h1 class="brand-title">Trafik <em>İşaretleri</em></h1>
+        <span class="grade-badge">2. Sınıf</span>
+      </div>
+
+      <div class="hud-group">
+        <div class="hud-pill hud-pill--progress" aria-label="Soru ilerlemesi">
+          <div class="progress-text">
+            <span>Soru</span>
+            <span id="progress-counter">1 / 9</span>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="hud-pill hud-pill--score" aria-live="polite" aria-label="Toplam puan">
+          <span class="score-star" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2.5l2.92 5.92 6.53.95-4.72 4.6 1.11 6.5L12 17.4l-5.84 3.07 1.11-6.5-4.72-4.6 6.53-.95L12 2.5z"/>
+            </svg>
+          </span>
+          <span>Puan:</span>
+          <span class="score-value" id="score-value">0</span>
+        </div>
+
+        <button type="button" class="sound-btn" id="sound-toggle" aria-pressed="true" aria-label="Sesi kapat" title="Sesi Aç / Kapat">
+          <svg id="sound-icon-on" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="sound-icon-off" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Stage -->
+    <main class="stage-container">
+      <!-- Active Question Stage -->
+      <section class="quiz-stage" id="quiz-stage" aria-label="Soru Alanı">
+        <div class="sign-card">
+          <span class="sign-kicker" id="sign-kicker">Trafik İşaret Levhası</span>
+          <div class="sign-frame">
+            <div class="sign-svg-wrap" id="sign-svg-wrap" aria-hidden="true"></div>
+          </div>
+          <h2 class="question-prompt">Bu trafik işareti ne anlama gelir?</h2>
+        </div>
+
+        <div class="answer-column">
+          <div class="options-list" id="options-list" role="group" aria-label="Seçenekler"></div>
+
+          <div class="feedback-bar" id="feedback-bar" aria-live="polite">
+            <p class="feedback-msg" id="feedback-msg">Doğru seçeneğe tıkla!</p>
+            <button type="button" class="btn-next is-hidden" id="next-btn">
+              <span>Sonraki Soru</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- End-of-Game Summary Stage -->
+      <section class="summary-stage is-hidden" id="summary-stage" aria-label="Oyun Özeti">
+        <div class="summary-card">
+          <div class="summary-hero">
+            <div class="trophy-badge" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                <path d="M4 22h16"></path>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+              </svg>
+            </div>
+            <h2 class="summary-title" id="summary-title">Harikasın, <em>Tebrikler!</em></h2>
+            <p class="summary-subtitle" id="summary-subtitle">Tüm trafik işaretlerini başarıyla tamamladın.</p>
+          </div>
+
+          <div class="summary-stats">
+            <div class="stat-tile">
+              <span class="stat-label">Toplam Puan</span>
+              <span class="stat-value" id="final-score">0</span>
+            </div>
+            <div class="stat-tile">
+              <span class="stat-label">Doğru Cevap</span>
+              <span class="stat-value" id="final-correct">0 / 9</span>
+            </div>
+            <div class="stat-tile">
+              <span class="stat-label">Başarı</span>
+              <span class="stat-value" id="final-percent">%0</span>
+            </div>
+          </div>
+
+          <div class="review-grid" id="review-grid" aria-label="İşaret Sonuçları"></div>
+
+          <div class="summary-actions">
+            <button type="button" class="btn-play-again" id="play-again-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              <span>Tekrar Oyna</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <api-shim></api-shim>
+  <script>
+    (function () {
+      'use strict';
+
+      const SIGNS = [
+        {
+          id: `yaya-gecidi`,
+          label: `Yaya Geçidi`,
+          hint: `Yayaların karşıdan karşıya güvenle geçtiği yerdir.`,
+          distractors: [`Okul Geçidi`, `Mecburi Yaya Yolu`, `Alt Geçit`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="14" y="14" width="172" height="172" rx="20" fill="var(--sign-blue)"/>
+            <rect x="21" y="21" width="158" height="158" rx="14" fill="none" stroke="var(--sign-white)" stroke-width="3.5"/>
+            <polygon points="100,34 166,158 34,158" fill="var(--sign-white)" stroke="var(--sign-white)" stroke-width="6" stroke-linejoin="round"/>
+            <rect x="52" y="141" width="16" height="8" rx="2" fill="var(--sign-black)"/>
+            <rect x="76" y="141" width="18" height="8" rx="2" fill="var(--sign-black)"/>
+            <rect x="102" y="141" width="18" height="8" rx="2" fill="var(--sign-black)"/>
+            <rect x="128" y="141" width="18" height="8" rx="2" fill="var(--sign-black)"/>
+            <circle cx="101" cy="70" r="9.5" fill="var(--sign-black)"/>
+            <path d="M97 82 L106 83 L103 108 L116 135 L107 137 L96 113 L86 136 L77 133 L91 104 Z" fill="var(--sign-black)"/>
+            <path d="M95 86 L79 102 L84 107 L97 94 Z" fill="var(--sign-black)"/>
+            <path d="M104 86 L120 100 L115 106 L101 94 Z" fill="var(--sign-black)"/>
+          </svg>`
+        },
+        {
+          id: `okul-gecidi`,
+          label: `Okul Geçidi`,
+          hint: `Okul yakınında öğrencilerin geçtiği yeri gösterir.`,
+          distractors: [`Yaya Geçidi`, `Yaya Giremez`, `Mecburi Yaya Yolu`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <polygon points="100,20 184,168 16,168" fill="var(--sign-white)" stroke="var(--sign-red)" stroke-width="16" stroke-linejoin="round"/>
+            <rect x="52" y="152" width="96" height="5" rx="2.5" fill="var(--sign-black)"/>
+            <!-- Büyük öğrenci + çanta -->
+            <circle cx="88" cy="83" r="7.5" fill="var(--sign-black)"/>
+            <rect x="75" y="96" width="9" height="17" rx="2" fill="var(--sign-black)"/>
+            <path d="M84 93 L94 94 L92 120 L100 148 L93 149 L87 125 L80 149 L73 147 L82 118 Z" fill="var(--sign-black)"/>
+            <path d="M92 96 L105 110 L101 114 L90 102 Z" fill="var(--sign-black)"/>
+            <!-- Küçük öğrenci + çanta -->
+            <circle cx="115" cy="96" r="6.5" fill="var(--sign-black)"/>
+            <rect x="103" y="106" width="7.5" height="14" rx="2" fill="var(--sign-black)"/>
+            <path d="M111 104 L119 105 L118 126 L126 148 L120 149 L114 130 L107 149 L101 147 L109 124 Z" fill="var(--sign-black)"/>
+            <path d="M112 108 L101 113 L103 117 L113 112 Z" fill="var(--sign-black)"/>
+          </svg>`
+        },
+        {
+          id: `alt-gecit`,
+          label: `Alt Geçit`,
+          hint: `Yolun altından güvenli geçiş olduğunu gösterir.`,
+          distractors: [`Üst Geçit`, `Yaya Geçidi`, `Mecburi Yaya Yolu`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="14" y="14" width="172" height="172" rx="20" fill="var(--sign-blue)"/>
+            <rect x="21" y="21" width="158" height="158" rx="14" fill="none" stroke="var(--sign-white)" stroke-width="3.5"/>
+            <!-- Yol / tavan çizgisi üstte -->
+            <rect x="96" y="42" width="66" height="12" rx="3" fill="var(--sign-white)"/>
+            <rect x="148" y="42" width="14" height="114" rx="3" fill="var(--sign-white)"/>
+            <!-- Aşağı inen merdiven -->
+            <path d="M36 92 H58 V108 H78 V124 H98 V140 H148 V156 H36 Z" fill="var(--sign-white)"/>
+            <!-- Aşağı inen yaya figürü -->
+            <circle cx="80" cy="54" r="8" fill="var(--sign-white)"/>
+            <path d="M76 64 L85 65 L83 88 L95 108 L88 111 L78 93 L68 106 L62 102 L73 86 Z" fill="var(--sign-white)"/>
+            <path d="M84 68 L97 79 L93 84 L81 74 Z" fill="var(--sign-white)"/>
+            <!-- Aşağı yön oku -->
+            <path d="M114 70 L132 88 L132 76 L140 76 L140 102 L114 102 L114 94 L126 94 L108 76 Z" fill="var(--sign-white)"/>
+          </svg>`
+        },
+        {
+          id: `ust-gecit`,
+          label: `Üst Geçit`,
+          hint: `Yolun üstündeki köprüden geçiş olduğunu gösterir.`,
+          distractors: [`Alt Geçit`, `Yaya Geçidi`, `Okul Geçidi`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="14" y="14" width="172" height="172" rx="20" fill="var(--sign-blue)"/>
+            <rect x="21" y="21" width="158" height="158" rx="14" fill="none" stroke="var(--sign-white)" stroke-width="3.5"/>
+            <!-- Üst köprü ve iki yandan merdiven -->
+            <path d="M34 148 H50 V132 H64 V116 H78 V100 H122 V116 H136 V132 H150 V148 H166 V160 H138 V144 H124 V128 H110 V112 H90 V128 H76 V144 H62 V160 H34 Z" fill="var(--sign-white)"/>
+            <!-- Alttaki yol -->
+            <rect x="82" y="148" width="36" height="12" rx="3" fill="var(--sign-white)"/>
+            <!-- Köprü üstünde yürüyen yaya -->
+            <circle cx="98" cy="48" r="8" fill="var(--sign-white)"/>
+            <path d="M94 58 L103 59 L101 80 L112 97 L105 99 L96 84 L88 99 L81 97 L91 78 Z" fill="var(--sign-white)"/>
+            <path d="M92 62 L79 74 L84 78 L95 67 Z" fill="var(--sign-white)"/>
+            <path d="M102 62 L115 73 L110 78 L99 67 Z" fill="var(--sign-white)"/>
+          </svg>`
+        },
+        {
+          id: `isikli-isaret`,
+          label: `Işıklı İşaret Cihazı`,
+          hint: `İleride kırmızı, sarı ve yeşil trafik ışıkları vardır.`,
+          distractors: [`Yaya Geçidi`, `Okul Geçidi`, `Üst Geçit`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <polygon points="100,20 184,168 16,168" fill="var(--sign-white)" stroke="var(--sign-red)" stroke-width="16" stroke-linejoin="round"/>
+            <rect x="82" y="64" width="36" height="88" rx="9" fill="var(--sign-black)"/>
+            <circle cx="100" cy="82" r="10" fill="var(--sign-red)"/>
+            <circle cx="100" cy="108" r="10" fill="var(--sign-yellow)"/>
+            <circle cx="100" cy="134" r="10" fill="var(--sign-green)"/>
+          </svg>`
+        },
+        {
+          id: `bisiklet-giremez`,
+          label: `Bisiklet Giremez`,
+          hint: `Bu yola bisikletle girmek yasaktır.`,
+          distractors: [`Mecburi Bisiklet Yolu`, `Yaya Giremez`, `Mecburi Yaya Yolu`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="100" cy="100" r="82" fill="var(--sign-white)" stroke="var(--sign-red)" stroke-width="18"/>
+            <g stroke="var(--sign-black)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="67" cy="116" r="20" stroke-width="6.5"/>
+              <circle cx="133" cy="116" r="20" stroke-width="6.5"/>
+              <polyline points="67,116 90,82 122,82 133,116" stroke-width="6.5"/>
+              <polyline points="90,82 99,116 67,116" stroke-width="6.5"/>
+              <line x1="99" y1="116" x2="122" y2="82" stroke-width="6.5"/>
+              <line x1="84" y1="74" x2="96" y2="74" stroke-width="7"/>
+              <path d="M118 72 H129 L132 80" stroke-width="6.5"/>
+            </g>
+          </svg>`
+        },
+        {
+          id: `yaya-giremez`,
+          label: `Yaya Giremez`,
+          hint: `Yayaların bu alana girmesi yasaktır.`,
+          distractors: [`Mecburi Yaya Yolu`, `Bisiklet Giremez`, `Yaya Geçidi`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="100" cy="100" r="82" fill="var(--sign-white)" stroke="var(--sign-red)" stroke-width="18"/>
+            <circle cx="102" cy="54" r="11" fill="var(--sign-black)"/>
+            <path d="M97 68 L108 69 L105 102 L123 144 L112 148 L99 112 L84 147 L73 143 L91 98 Z" fill="var(--sign-black)"/>
+            <path d="M94 74 L74 96 L80 103 L98 84 Z" fill="var(--sign-black)"/>
+            <path d="M107 74 L128 94 L121 101 L103 84 Z" fill="var(--sign-black)"/>
+          </svg>`
+        },
+        {
+          id: `mecburi-bisiklet-yolu`,
+          label: `Mecburi Bisiklet Yolu`,
+          hint: `Sadece bisikletlerin gitmesi gereken yoldur.`,
+          distractors: [`Bisiklet Giremez`, `Mecburi Yaya Yolu`, `Yaya Giremez`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="100" cy="100" r="88" fill="var(--sign-blue)"/>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--sign-white)" stroke-width="3.5"/>
+            <g stroke="var(--sign-white)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="64" cy="118" r="22" stroke-width="7"/>
+              <circle cx="136" cy="118" r="22" stroke-width="7"/>
+              <polyline points="64,118 89,80 124,80 136,118" stroke-width="7"/>
+              <polyline points="89,80 99,118 64,118" stroke-width="7"/>
+              <line x1="99" y1="118" x2="124" y2="80" stroke-width="7"/>
+              <line x1="82" y1="71" x2="96" y2="71" stroke-width="7.5"/>
+              <path d="M120 69 H132 L135 78" stroke-width="7"/>
+            </g>
+          </svg>`
+        },
+        {
+          id: `mecburi-yaya-yolu`,
+          label: `Mecburi Yaya Yolu`,
+          hint: `Yayaların yürümesi gereken özel yoldur.`,
+          distractors: [`Yaya Giremez`, `Mecburi Bisiklet Yolu`, `Yaya Geçidi`],
+          svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="100" cy="100" r="88" fill="var(--sign-blue)"/>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--sign-white)" stroke-width="3.5"/>
+            <circle cx="102" cy="50" r="12" fill="var(--sign-white)"/>
+            <path d="M96 66 L109 67 L106 104 L126 150 L114 154 L99 115 L83 153 L71 149 L90 99 Z" fill="var(--sign-white)"/>
+            <path d="M93 72 L71 97 L78 104 L97 83 Z" fill="var(--sign-white)"/>
+            <path d="M108 72 L131 94 L124 102 L104 83 Z" fill="var(--sign-white)"/>
+          </svg>`
+        }
+      ];
+
+      const OPTION_LETTERS = [`A`, `B`, `C`];
+      const POINTS_PER_QUESTION = 10;
+      const AUTO_ADVANCE_MS = 1200;
+
+      let gameQuestions = [];
+      let currentIndex = 0;
+      let score = 0;
+      let correctCount = 0;
+      let questionResults = [];
+      let isLocked = false;
+      let advanceTimer = null;
+      let soundEnabled = true;
+      let bestScore = 0;
+      let gamesPlayed = 0;
+      let audioCtx = null;
+
+      /* DOM references */
+      const progressCounterEl = document.getElementById(`progress-counter`);
+      const progressFillEl = document.getElementById(`progress-fill`);
+      const scoreValueEl = document.getElementById(`score-value`);
+      const soundToggleBtn = document.getElementById(`sound-toggle`);
+      const soundIconOn = document.getElementById(`sound-icon-on`);
+      const soundIconOff = document.getElementById(`sound-icon-off`);
+
+      const quizStageEl = document.getElementById(`quiz-stage`);
+      const summaryStageEl = document.getElementById(`summary-stage`);
+      const signSvgWrapEl = document.getElementById(`sign-svg-wrap`);
+      const signKickerEl = document.getElementById(`sign-kicker`);
+      const optionsListEl = document.getElementById(`options-list`);
+      const feedbackBarEl = document.getElementById(`feedback-bar`);
+      const feedbackMsgEl = document.getElementById(`feedback-msg`);
+      const nextBtnEl = document.getElementById(`next-btn`);
+
+      const summaryTitleEl = document.getElementById(`summary-title`);
+      const summarySubtitleEl = document.getElementById(`summary-subtitle`);
+      const finalScoreEl = document.getElementById(`final-score`);
+      const finalCorrectEl = document.getElementById(`final-correct`);
+      const finalPercentEl = document.getElementById(`final-percent`);
+      const reviewGridEl = document.getElementById(`review-grid`);
+      const playAgainBtnEl = document.getElementById(`play-again-btn`);
+
+      /* Fisher-Yates shuffle */
+      function shuffleArray(arr) {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = copy[i];
+          copy[i] = copy[j];
+          copy[j] = temp;
+        }
+        return copy;
+      }
+
+      /* Web Audio API Sound Effects */
+      function ensureAudioContext() {
+        if (!soundEnabled) return null;
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return null;
+        if (!audioCtx) {
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === `suspended`) {
+          audioCtx.resume().catch(function () {});
+        }
+        return audioCtx;
+      }
+
+      function playTone(freq, startOffset, duration, type, peakGain) {
+        const ctx = ensureAudioContext();
+        if (!ctx) return;
+
+        const now = ctx.currentTime + startOffset;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = type || `sine`;
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(peakGain || 0.16, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+      }
+
+      function playCorrectSound() {
+        if (!soundEnabled) return;
+        playTone(523.25, 0.0, 0.16, `triangle`, 0.18);
+        playTone(659.25, 0.08, 0.18, `triangle`, 0.18);
+        playTone(783.99, 0.16, 0.22, `triangle`, 0.18);
+        playTone(1046.5, 0.25, 0.34, `sine`, 0.2);
+      }
+
+      function playWrongSound() {
+        if (!soundEnabled) return;
+        playTone(311.13, 0.0, 0.18, `sine`, 0.14);
+        playTone(233.08, 0.14, 0.28, `sine`, 0.14);
+      }
+
+      function playFinishSound() {
+        if (!soundEnabled) return;
+        playTone(523.25, 0.0, 0.15, `triangle`, 0.16);
+        playTone(659.25, 0.1, 0.15, `triangle`, 0.16);
+        playTone(783.99, 0.2, 0.15, `triangle`, 0.16);
+        playTone(880.0, 0.3, 0.18, `triangle`, 0.17);
+        playTone(1046.5, 0.42, 0.42, `sine`, 0.22);
+      }
+
+      function playTapSound() {
+        if (!soundEnabled) return;
+        playTone(620, 0.0, 0.07, `sine`, 0.08);
+      }
+
+      function updateSoundButtonUI() {
+        if (!soundToggleBtn || !soundIconOn || !soundIconOff) return;
+        soundToggleBtn.setAttribute(`aria-pressed`, String(soundEnabled));
+        soundToggleBtn.setAttribute(
+          `aria-label`,
+          soundEnabled ? `Sesi kapat` : `Sesi aç`
+        );
+        soundIconOn.style.display = soundEnabled ? `block` : `none`;
+        soundIconOff.style.display = soundEnabled ? `none` : `block`;
+      }
+
+      async function savePersistentState() {
+        try {
+          if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === `function`) {
+            await window.notebookAppApi.setAppState({
+              bestScore: bestScore,
+              gamesPlayed: gamesPlayed,
+              soundEnabled: soundEnabled
+            });
+          }
+        } catch (err) {
+          /* Ignore persistence errors in standalone preview */
+        }
+      }
+
+      async function loadPersistentState() {
+        try {
+          if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === `function`) {
+            const saved = await window.notebookAppApi.getAppState();
+            if (saved && typeof saved === `object`) {
+              if (typeof saved.bestScore === `number`) bestScore = saved.bestScore;
+              if (typeof saved.gamesPlayed === `number`) gamesPlayed = saved.gamesPlayed;
+              if (typeof saved.soundEnabled === `boolean`) soundEnabled = saved.soundEnabled;
+            }
+          }
+        } catch (err) {
+          /* Ignore load errors in standalone preview */
+        }
+        updateSoundButtonUI();
+      }
+
+      function buildOptionsForSign(targetSign) {
+        const pool = targetSign.distractors.slice();
+        const shuffledDistractors = shuffleArray(pool).slice(0, 2);
+        const rawOptions = [targetSign.label].concat(shuffledDistractors);
+        return shuffleArray(rawOptions);
+      }
+
+      function clearPendingAdvance() {
+        if (advanceTimer !== null) {
+          clearTimeout(advanceTimer);
+          advanceTimer = null;
+        }
+      }
+
+      function updateHud() {
+        const total = gameQuestions.length || 9;
+        const shownNum = Math.min(currentIndex + 1, total);
+        if (progressCounterEl) {
+          progressCounterEl.textContent = `${shownNum} / ${total}`;
+        }
+        if (progressFillEl) {
+          const pct = Math.round(((currentIndex + (isLocked ? 1 : 0)) / total) * 100);
+          progressFillEl.style.width = `${pct}%`;
+        }
+        if (scoreValueEl) {
+          scoreValueEl.textContent = String(score);
+        }
+      }
+
+      function renderQuestion() {
+        clearPendingAdvance();
+        isLocked = false;
+
+        const question = gameQuestions[currentIndex];
+        if (!question) {
+          showSummary();
+          return;
+        }
+
+        if (quizStageEl) quizStageEl.classList.remove(`is-hidden`);
+        if (summaryStageEl) summaryStageEl.classList.add(`is-hidden`);
+
+        if (signKickerEl) {
+          signKickerEl.textContent = `${currentIndex + 1}. İşaret Levhası`;
+        }
+
+        if (signSvgWrapEl) {
+          signSvgWrapEl.innerHTML = question.sign.svg;
+          signSvgWrapEl.style.animation = `none`;
+          void signSvgWrapEl.offsetWidth;
+          signSvgWrapEl.style.animation = ``;
+        }
+
+        if (feedbackBarEl) {
+          feedbackBarEl.classList.remove(`is-correct`, `is-wrong`);
+        }
+        if (feedbackMsgEl) {
+          feedbackMsgEl.textContent = `Doğru seçeneğe tıkla!`;
+        }
+        if (nextBtnEl) {
+          nextBtnEl.classList.add(`is-hidden`);
+        }
+
+        if (optionsListEl) {
+          optionsListEl.innerHTML = ``;
+          question.options.forEach(function (optionText, idx) {
+            const btn = document.createElement(`button`);
+            btn.type = `button`;
+            btn.className = `option-card`;
+            btn.dataset.option = optionText;
+
+            const mainSpan = document.createElement(`span`);
+            mainSpan.className = `option-main`;
+
+            const letterSpan = document.createElement(`span`);
+            letterSpan.className = `option-letter`;
+            letterSpan.textContent = OPTION_LETTERS[idx] || String(idx + 1);
+
+            const labelSpan = document.createElement(`span`);
+            labelSpan.className = `option-label`;
+            labelSpan.textContent = optionText;
+
+            mainSpan.appendChild(letterSpan);
+            mainSpan.appendChild(labelSpan);
+
+            const statusSpan = document.createElement(`span`);
+            statusSpan.className = `option-status-icon`;
+            statusSpan.setAttribute(`aria-hidden`, `true`);
+
+            btn.appendChild(mainSpan);
+            btn.appendChild(statusSpan);
+
+            btn.addEventListener(`click`, function () {
+              handleOptionClick(btn, optionText);
+            });
+
+            optionsListEl.appendChild(btn);
+          });
+        }
+
+        updateHud();
+      }
+
+      function setStatusIcon(btn, isCorrectIcon) {
+        const iconWrap = btn.querySelector(`.option-status-icon`);
+        if (!iconWrap) return;
+        if (isCorrectIcon) {
+          iconWrap.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+        } else {
+          iconWrap.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        }
+      }
+
+      function handleOptionClick(clickedBtn, selectedLabel) {
+        if (isLocked) return;
+        isLocked = true;
+
+        const currentQuestion = gameQuestions[currentIndex];
+        if (!currentQuestion) return;
+
+        const correctLabel = currentQuestion.sign.label;
+        const isCorrect = selectedLabel === correctLabel;
+
+        const allButtons = optionsListEl
+          ? Array.prototype.slice.call(optionsListEl.querySelectorAll(`.option-card`))
+          : [];
+
+        allButtons.forEach(function (btn) {
+          btn.disabled = true;
+          const label = btn.dataset.option;
+          if (label === correctLabel) {
+            btn.classList.add(`is-correct`);
+            setStatusIcon(btn, true);
+          } else if (btn === clickedBtn && !isCorrect) {
+            btn.classList.add(`is-wrong`);
+            setStatusIcon(btn, false);
+          } else {
+            btn.classList.add(`is-muted`);
+          }
+        });
+
+        questionResults.push({
+          sign: currentQuestion.sign,
+          isCorrect: isCorrect
+        });
+
+        if (isCorrect) {
+          score += POINTS_PER_QUESTION;
+          correctCount += 1;
+          playCorrectSound();
+          updateHud();
+
+          if (feedbackBarEl) feedbackBarEl.classList.add(`is-correct`);
+          if (feedbackMsgEl) {
+            feedbackMsgEl.textContent = `Harika! +${POINTS_PER_QUESTION} puan. ${currentQuestion.sign.hint}`;
+          }
+
+          clearPendingAdvance();
+          advanceTimer = setTimeout(function () {
+            goToNextQuestion();
+          }, AUTO_ADVANCE_MS);
+        } else {
+          playWrongSound();
+          updateHud();
+
+          if (feedbackBarEl) feedbackBarEl.classList.add(`is-wrong`);
+          if (feedbackMsgEl) {
+            feedbackMsgEl.textContent = `Doğrusu: ${correctLabel}. ${currentQuestion.sign.hint}`;
+          }
+          if (nextBtnEl) {
+            nextBtnEl.classList.remove(`is-hidden`);
+            nextBtnEl.focus();
+          }
+        }
+      }
+
+      function goToNextQuestion() {
+        clearPendingAdvance();
+        currentIndex += 1;
+        if (currentIndex >= gameQuestions.length) {
+          showSummary();
+        } else {
+          renderQuestion();
+        }
+      }
+
+      function showSummary() {
+        clearPendingAdvance();
+        if (quizStageEl) quizStageEl.classList.add(`is-hidden`);
+        if (summaryStageEl) summaryStageEl.classList.remove(`is-hidden`);
+
+        const total = gameQuestions.length || 9;
+        const percent = Math.round((correctCount / total) * 100);
+
+        if (score > bestScore) {
+          bestScore = score;
+        }
+        gamesPlayed += 1;
+        savePersistentState();
+        playFinishSound();
+
+        if (progressFillEl) {
+          progressFillEl.style.width = `100%`;
+        }
+
+        if (summaryTitleEl && summarySubtitleEl) {
+          if (correctCount === total) {
+            summaryTitleEl.innerHTML = `Mükemmel! <em>Trafik Kahramanısın!</em>`;
+            summarySubtitleEl.textContent = `Bütün trafik işaretlerini eksiksiz doğru bildin!`;
+          } else if (correctCount >= 7) {
+            summaryTitleEl.innerHTML = `Çok İyi! <em>Harika Gittin!</em>`;
+            summarySubtitleEl.textContent = `Trafik işaretlerinin çoğunu kolayca tanıdın.`;
+          } else if (correctCount >= 4) {
+            summaryTitleEl.innerHTML = `Güzel Çaba! <em>Devam Et!</em>`;
+            summarySubtitleEl.textContent = `Bir kez daha oynayarak tüm işaretleri pekiştirebilirsin.`;
+          } else {
+            summaryTitleEl.innerHTML = `İyi Başlangıç! <em>Tekrar Dene!</em>`;
+            summarySubtitleEl.textContent = `Her oyunda trafik işaretlerini daha iyi öğreneceksin.`;
+          }
+        }
+
+        if (finalScoreEl) finalScoreEl.textContent = String(score);
+        if (finalCorrectEl) finalCorrectEl.textContent = `${correctCount} / ${total}`;
+        if (finalPercentEl) finalPercentEl.textContent = `%${percent}`;
+
+        if (reviewGridEl) {
+          reviewGridEl.innerHTML = ``;
+          questionResults.forEach(function (entry) {
+            const chip = document.createElement(`div`);
+            chip.className = `review-chip ${entry.isCorrect ? `is-ok` : `is-miss`}`;
+
+            const mini = document.createElement(`span`);
+            mini.className = `review-mini-sign`;
+            mini.innerHTML = entry.sign.svg;
+
+            const name = document.createElement(`span`);
+            name.className = `review-name`;
+            name.textContent = entry.sign.label;
+
+            const mark = document.createElement(`span`);
+            mark.className = `review-mark`;
+            mark.textContent = entry.isCorrect ? `✓` : `✕`;
+            mark.setAttribute(`aria-label`, entry.isCorrect ? `Doğru` : `Yanlış`);
+
+            chip.appendChild(mini);
+            chip.appendChild(name);
+            chip.appendChild(mark);
+            reviewGridEl.appendChild(chip);
+          });
+        }
+      }
+
+      function startNewGame() {
+        clearPendingAdvance();
+        const shuffledSigns = shuffleArray(SIGNS);
+        gameQuestions = shuffledSigns.map(function (sign) {
+          return {
+            sign: sign,
+            options: buildOptionsForSign(sign)
+          };
+        });
+        currentIndex = 0;
+        score = 0;
+        correctCount = 0;
+        questionResults = [];
+        isLocked = false;
+        renderQuestion();
+      }
+
+      /* Event bindings */
+      if (nextBtnEl) {
+        nextBtnEl.addEventListener(`click`, function () {
+          playTapSound();
+          goToNextQuestion();
+        });
+      }
+
+      if (playAgainBtnEl) {
+        playAgainBtnEl.addEventListener(`click`, function () {
+          playTapSound();
+          startNewGame();
+        });
+      }
+
+      if (soundToggleBtn) {
+        soundToggleBtn.addEventListener(`click`, function () {
+          soundEnabled = !soundEnabled;
+          updateSoundButtonUI();
+          if (soundEnabled) {
+            playTapSound();
+          }
+          savePersistentState();
+        });
+      }
+
+      /* Keyboard shortcuts 1-3 for options and Enter/Space for Sonraki Soru */
+      document.addEventListener(`keydown`, function (evt) {
+        if (quizStageEl && !quizStageEl.classList.contains(`is-hidden`)) {
+          if (!isLocked && (evt.key === `1` || evt.key === `2` || evt.key === `3`)) {
+            const idx = Number(evt.key) - 1;
+            const btns = optionsListEl ? optionsListEl.querySelectorAll(`.option-card`) : [];
+            if (btns[idx]) {
+              btns[idx].click();
+            }
+          } else if (isLocked && nextBtnEl && !nextBtnEl.classList.contains(`is-hidden`) && evt.key === `Enter`) {
+            evt.preventDefault();
+            nextBtnEl.click();
+          }
+        }
+      });
+
+      async function initApp() {
+        await loadPersistentState();
+        startNewGame();
+        if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === `function`) {
+          window.notebookAppApi.notifyAppReady();
+        }
+      }
+
+      initApp();
+    })();
+  </script>
+</body>
+</html>
