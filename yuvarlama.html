@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>En Yakın Onluğa Yuvarlama</title>
+  <style>
+    :root {
+      --bg-sky: #e0f2fe;
+      --bg-card: #ffffff;
+      --primary: #0284c7;
+      --hill-green: #84cc16;
+      --hill-dark: #4d7c0f;
+      --snow-gray: #e2e8f0;
+      --correct: #22c55e;
+      --correct-bg: #dcfce7;
+      --wrong: #ef4444;
+      --wrong-bg: #fee2e2;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #bae6fd 0%, #f0f9ff 100%);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game-container {
+      width: 100%;
+      max-width: 850px;
+      height: 100%;
+      max-height: 100dvh;
+      padding: clamp(8px, 1.8vh, 18px) clamp(12px, 2.5vw, 24px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Header & Score */
+    .header {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(4px, 1vh, 8px);
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: clamp(1.15rem, 3.2vw, 1.85rem);
+      font-weight: 900;
+      color: #0369a1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+      text-shadow: 0 2px 0 #ffffff;
+    }
+
+    .stats-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      padding: clamp(6px, 1.2vh, 10px) clamp(12px, 2vw, 20px);
+      border-radius: 50px;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+      border: 2px solid #bae6fd;
+    }
+
+    .badge {
+      font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+      font-weight: 800;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge span {
+      color: var(--primary);
+      font-size: clamp(0.95rem, 2.5vw, 1.25rem);
+    }
+
+    .progress-track {
+      flex: 1;
+      height: clamp(8px, 1.4vh, 12px);
+      background: #e2e8f0;
+      border-radius: 20px;
+      margin: 0 clamp(10px, 2.5vw, 24px);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 5%;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      border-radius: 20px;
+      transition: width 0.35s ease;
+    }
+
+    /* Main Visual Card (Yuvarlama Tepesi) */
+    .board {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      margin: clamp(6px, 1.4vh, 12px) 0;
+      background: var(--bg-card);
+      border-radius: 28px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      border: 3px solid #e0f2fe;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: clamp(8px, 1.5vh, 16px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .instruction-pill {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 2px solid #fde047;
+      padding: clamp(4px, 0.8vh, 8px) clamp(14px, 2.5vw, 22px);
+      border-radius: 30px;
+      font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+      font-weight: 700;
+      text-align: center;
+      z-index: 2;
+    }
+
+    /* Hill SVG Illustration */
+    .hill-wrapper {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .hill-svg {
+      width: 100%;
+      height: 100%;
+      max-height: 36vh;
+      overflow: visible;
+    }
+
+    .digit-node {
+      font-weight: 900;
+      font-size: 24px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .digit-active {
+      filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.95));
+      font-size: 31px;
+    }
+
+    /* Target Sayı Display inside the Hill */
+    .number-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: -12px;
+      z-index: 2;
+    }
+
+    .number-circle {
+      background: #ffffff;
+      border: 4px solid #0284c7;
+      border-radius: 50px;
+      padding: clamp(4px, 1vh, 10px) clamp(22px, 4vw, 38px);
+      box-shadow: 0 6px 15px rgba(2, 132, 199, 0.2);
+      font-size: clamp(1.8rem, 5vh, 2.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: 2px;
+    }
+
+    .tens-digit {
+      color: #1e293b;
+    }
+
+    .ones-digit {
+      color: #e11d48;
+      text-decoration: underline;
+      text-decoration-thickness: 3px;
+      text-underline-offset: 4px;
+    }
+
+    .number-label {
+      font-size: clamp(0.8rem, 1.9vw, 1rem);
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Choice Circles Container */
+    .choices-area {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: clamp(12px, 3vw, 32px);
+      padding: clamp(4px, 1vh, 10px) 0;
+      z-index: 2;
+    }
+
+    .choice-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(4px, 0.8vh, 8px);
+      flex: 1;
+      max-width: 220px;
+    }
+
+    .choice-circle {
+      width: clamp(82px, 15vh, 125px);
+      height: clamp(82px, 15vh, 125px);
+      border-radius: 50%;
+      background: #f8fafc;
+      border: 5px solid #94a3b8;
+      font-size: clamp(1.6rem, 4.2vh, 2.4rem);
+      font-weight: 900;
+      color: var(--text-dark);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 6px 0 #cbd5e1, 0 10px 20px rgba(0, 0, 0, 0.08);
+      transition: transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.15s ease;
+    }
+
+    .choice-circle:hover:not(:disabled) {
+      transform: translateY(-3px) scale(1.03);
+      border-color: var(--primary);
+      background: #f0f9ff;
+    }
+
+    .choice-circle:active:not(:disabled) {
+      transform: translateY(2px);
+    }
+
+    .choice-circle:disabled {
+      cursor: default;
+    }
+
+    .choice-label {
+      font-size: clamp(0.82rem, 2.1vw, 1.05rem);
+      font-weight: 800;
+      color: #334155;
+      text-align: center;
+    }
+
+    /* States for Correct / Wrong */
+    .choice-circle.correct {
+      border-color: var(--correct) !important;
+      background-color: var(--correct-bg) !important;
+      color: #15803d !important;
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.28), 0 8px 20px rgba(34, 197, 94, 0.35) !important;
+      transform: scale(1.06);
+    }
+
+    .choice-circle.wrong {
+      border-color: var(--wrong) !important;
+      background-color: var(--wrong-bg) !important;
+      color: #b91c1c !important;
+      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.25) !important;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-6px); }
+      80% { transform: translateX(6px); }
+    }
+
+    .shake {
+      animation: shake 0.42s ease-in-out;
+    }
+
+    /* Footer Action Area */
+    .footer-area {
+      width: 100%;
+      height: clamp(44px, 7vh, 56px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .next-btn {
+      display: none;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      padding: clamp(10px, 1.5vh, 14px) clamp(26px, 5vw, 40px);
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #b45309, 0 8px 18px rgba(217, 119, 6, 0.35);
+      transition: transform 0.15s ease;
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .next-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #b45309;
+    }
+
+    .next-btn.visible {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      animation: popIn 0.25s ease-out;
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* End Screen Overlay */
+    .end-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(5px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .end-overlay.active {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .end-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 440px;
+      border-radius: 32px;
+      padding: clamp(20px, 4vh, 36px) 24px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      border: 4px solid #fde047;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(10px, 2vh, 18px);
+    }
+
+    .trophy {
+      font-size: clamp(3.8rem, 11vh, 5.5rem);
+      line-height: 1;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .end-title {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 900;
+      color: #0369a1;
+    }
+
+    .final-score-box {
+      background: #f0f9ff;
+      border: 3px dashed #38bdf8;
+      border-radius: 20px;
+      padding: 12px 28px;
+      width: 100%;
+    }
+
+    .final-score-label {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .final-score-value {
+      font-size: clamp(2.2rem, 6vh, 3.2rem);
+      font-weight: 900;
+      color: #16a34a;
+    }
+
+    .end-details {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .restart-btn {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 36px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #15803d, 0 10px 20px rgba(22, 163, 74, 0.3);
+      transition: transform 0.15s ease;
+      margin-top: 4px;
+    }
+
+    .restart-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .restart-btn:active {
+      transform: translateY(2px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container" id="gameContainer">
+    <!-- Top Header -->
+    <header class="header">
+      <h1 class="title">En Yakın Onluğa Yuvarlama</h1>
+      <div class="stats-bar">
+        <div class="badge">Soru: <span id="questionCounter">1 / 20</span></div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="badge">Puan: <span id="scoreDisplay">0</span></div>
+      </div>
+    </header>
+
+    <!-- Main Game Card -->
+    <main class="board" id="boardCard">
+      <div class="instruction-pill" id="hintText">
+        Birler basamağı <b>1, 2, 3, 4</b> ise kendi onluğuna; <b>5, 6, 7, 8, 9</b> ise sonraki onluğa yuvarlanır!
+      </div>
+
+      <!-- Yuvarlama Tepesi SVG -->
+      <div class="hill-wrapper">
+        <svg class="hill-svg" viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+          <!-- Left Arrow -->
+          <path d="M 190 35 Q 130 95 75 165" fill="none" stroke="#334155" stroke-width="3" stroke-dasharray="6,4" />
+          <polygon points="72,169 84,162 76,154" fill="#334155" />
+
+          <!-- Right Arrow -->
+          <path d="M 410 35 Q 470 95 525 165" fill="none" stroke="#334155" stroke-width="3" stroke-dasharray="6,4" />
+          <polygon points="528,169 524,154 516,162" fill="#334155" />
+
+          <!-- Hill Body -->
+          <path d="M 40 205 C 150 205, 220 20, 300 20 C 380 20, 450 205, 560 205 Z" fill="#84cc16" stroke="#3f6212" stroke-width="4" />
+
+          <!-- Snow Cap -->
+          <path d="M 263 58 Q 300 20 337 58 L 322 72 L 310 60 L 300 74 L 288 60 L 276 72 Z" fill="#f1f5f9" />
+
+          <!-- Hill Title -->
+          <text x="300" y="106" text-anchor="middle" font-size="20" font-weight="900" fill="#1a2e05">Yuvarlama</text>
+          <text x="300" y="128" text-anchor="middle" font-size="20" font-weight="900" fill="#1a2e05">Tepesi</text>
+
+          <!-- Left Slope Digits (0, 1, 2, 3, 4) -->
+          <text id="d-0" class="digit-node" x="92" y="188" fill="#65a30d">0</text>
+          <text id="d-1" class="digit-node" x="122" y="158" fill="#eab308">1</text>
+          <text id="d-2" class="digit-node" x="152" y="124" fill="#0284c7">2</text>
+          <text id="d-3" class="digit-node" x="184" y="88" fill="#dc2626">3</text>
+          <text id="d-4" class="digit-node" x="220" y="54" fill="#2563eb">4</text>
+
+          <!-- Right Slope Digits (5, 6, 7, 8, 9) -->
+          <text id="d-5" class="digit-node" x="364" y="54" fill="#eab308">5</text>
+          <text id="d-6" class="digit-node" x="398" y="88" fill="#db2777">6</text>
+          <text id="d-7" class="digit-node" x="430" y="124" fill="#0891b2">7</text>
+          <text id="d-8" class="digit-node" x="460" y="158" fill="#ec4899">8</text>
+          <text id="d-9" class="digit-node" x="490" y="188" fill="#dc2626">9</text>
+        </svg>
+      </div>
+
+      <!-- Target Number -->
+      <div class="number-box">
+        <div class="number-circle" id="targetNumberBox">
+          <span class="tens-digit" id="tensPart">4</span><span class="ones-digit" id="onesPart">3</span>
+        </div>
+        <div class="number-label">Sayı</div>
+      </div>
+
+      <!-- Two Choice Circles -->
+      <div class="choices-area">
+        <div class="choice-group">
+          <button class="choice-circle" id="btnLower" onclick="handleAnswer('lower')">40</button>
+          <span class="choice-label">Kendi onluğu</span>
+        </div>
+
+        <div class="choice-group">
+          <button class="choice-circle" id="btnUpper" onclick="handleAnswer('upper')">50</button>
+          <span class="choice-label">Sonraki onluk</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Manual Next Button (Only shown on wrong answer) -->
+    <footer class="footer-area">
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+        Sonraki Soru ➔
+      </button>
+    </footer>
+  </div>
+
+  <!-- Final Results Screen -->
+  <div class="end-overlay" id="endOverlay">
+    <div class="end-card">
+      <div class="trophy">🏆</div>
+      <h2 class="end-title">Tebrikler!</h2>
+      <div class="final-score-box">
+        <div class="final-score-label">Toplam Puanın</div>
+        <div class="final-score-value"><span id="finalScore">100</span> / 100</div>
+      </div>
+      <p class="end-details" id="endSummary">20 soruda 20 doğru yaptın!</p>
+      <button class="restart-btn" onclick="startGame()">Tekrar Oyna 🔄</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Web Audio API Sound Effects ---
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playCorrectSound() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+        gain.gain.setValueAtTime(0.001, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.22, now + idx * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.26);
+      });
+    }
+
+    function playWrongSound() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const freqs = [240, 185];
+
+      freqs.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.16);
+
+        gain.gain.setValueAtTime(0.001, now + idx * 0.16);
+        gain.gain.exponentialRampToValueAtTime(0.18, now + idx * 0.16 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.16 + 0.24);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now + idx * 0.16);
+        osc.stop(now + idx * 0.16 + 0.25);
+      });
+    }
+
+    function playFanfareSound() {
+      initAudio();
+      const now = audioCtx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+      const times = [0, 0.1, 0.2, 0.32, 0.48, 0.62];
+
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + times[i]);
+
+        gain.gain.setValueAtTime(0.001, now + times[i]);
+        gain.gain.exponentialRampToValueAtTime(0.25, now + times[i] + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + times[i] + 0.35);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now + times[i]);
+        osc.stop(now + times[i] + 0.36);
+      });
+    }
+
+    // --- Game State & Logic ---
+    const TOTAL_QUESTIONS = 20;
+    const POINTS_PER_QUESTION = 5; // 20 * 5 = 100
+    let questions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let correctCount = 0;
+    let isAnswered = false;
+    let autoNextTimer = null;
+
+    const questionCounterEl = document.getElementById('questionCounter');
+    const scoreDisplayEl = document.getElementById('scoreDisplay');
+    const progressFillEl = document.getElementById('progressFill');
+    const tensPartEl = document.getElementById('tensPart');
+    const onesPartEl = document.getElementById('onesPart');
+    const btnLower = document.getElementById('btnLower');
+    const btnUpper = document.getElementById('btnUpper');
+    const nextBtn = document.getElementById('nextBtn');
+    const boardCard = document.getElementById('boardCard');
+    const endOverlay = document.getElementById('endOverlay');
+    const finalScoreEl = document.getElementById('finalScore');
+    const endSummaryEl = document.getElementById('endSummary');
+
+    // Generate 20 unique random numbers from 11 to 99 excluding multiples of 10
+    function generateQuestions() {
+      const pool = [];
+      for (let n = 11; n <= 99; n++) {
+        if (n % 10 !== 0) {
+          pool.push(n);
+        }
+      }
+      // Fisher-Yates Shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      return pool.slice(0, TOTAL_QUESTIONS);
+    }
+
+    function startGame() {
+      clearTimeout(autoNextTimer);
+      questions = generateQuestions();
+      currentIndex = 0;
+      score = 0;
+      correctCount = 0;
+      isAnswered = false;
+
+      scoreDisplayEl.textContent = '0';
+      endOverlay.classList.remove('active');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      isAnswered = false;
+      clearTimeout(autoNextTimer);
+
+      const num = questions[currentIndex];
+      const tens = Math.floor(num / 10);
+      const ones = num % 10;
+      const lowerTen = tens * 10;
+      const upperTen = (tens + 1) * 10;
+
+      // Update UI counters
+      questionCounterEl.textContent = `${currentIndex + 1} / ${TOTAL_QUESTIONS}`;
+      progressFillEl.style.width = `${((currentIndex + 1) / TOTAL_QUESTIONS) * 100}%`;
+
+      // Update Number Display
+      tensPartEl.textContent = tens;
+      onesPartEl.textContent = ones;
+
+      // Highlight matching digit on the hill
+      for (let d = 0; d <= 9; d++) {
+        const el = document.getElementById(`d-${d}`);
+        if (el) {
+          el.classList.toggle('digit-active', d === ones);
+        }
+      }
+
+      // Reset Buttons
+      btnLower.textContent = lowerTen;
+      btnUpper.textContent = upperTen;
+      btnLower.disabled = false;
+      btnUpper.disabled = false;
+      btnLower.className = 'choice-circle';
+      btnUpper.className = 'choice-circle';
+
+      // Hide manual next button & remove shake
+      nextBtn.classList.remove('visible');
+      boardCard.classList.remove('shake');
+    }
+
+    function handleAnswer(selectedSide) {
+      if (isAnswered) return;
+      isAnswered = true;
+
+      const num = questions[currentIndex];
+      const ones = num % 10;
+      const correctSide = ones < 5 ? 'lower' : 'upper';
+
+      btnLower.disabled = true;
+      btnUpper.disabled = true;
+
+      const selectedBtn = selectedSide === 'lower' ? btnLower : btnUpper;
+      const correctBtn = correctSide === 'lower' ? btnLower : btnUpper;
+
+      if (selectedSide === correctSide) {
+        // Correct Answer
+        playCorrectSound();
+        selectedBtn.classList.add('correct');
+        score += POINTS_PER_QUESTION;
+        correctCount++;
+        scoreDisplayEl.textContent = score;
+
+        autoNextTimer = setTimeout(() => {
+          nextQuestion();
+        }, 1200);
+      } else {
+        // Wrong Answer
+        playWrongSound();
+        selectedBtn.classList.add('wrong');
+        correctBtn.classList.add('correct');
+
+        // Trigger light shake effect
+        boardCard.classList.remove('shake');
+        void boardCard.offsetWidth; // Force reflow
+        boardCard.classList.add('shake');
+
+        // Pause until student clicks "Sonraki Soru"
+        nextBtn.classList.add('visible');
+      }
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < TOTAL_QUESTIONS) {
+        loadQuestion();
+      } else {
+        showEndScreen();
+      }
+    }
+
+    function showEndScreen() {
+      playFanfareSound();
+      finalScoreEl.textContent = score;
+      endSummaryEl.textContent = `${TOTAL_QUESTIONS} soruda ${correctCount} doğru cevap verdin!`;
+      endOverlay.classList.add('active');
+    }
+
+    // Initialize game on load
+    window.addEventListener('DOMContentLoaded', startGame);
+  </script>
+</body>
+</html>
