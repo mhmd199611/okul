@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="tool">
+  <meta name="design-style" content="sticker">
+  <title>Vücudumuzun Bölümleri Oyunu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+
+      /* Page and surfaces */
+      --background: #fef7ff;
+      --surface-container-low: #ffffff;
+      --surface-container: #f8eef8;
+      --surface-container-high: #f2e8f2;
+
+      /* Ink */
+      --on-surface: #2e1a28;
+      --on-surface-variant: #604868;
+
+      /* Rules */
+      --outline: #907898;
+      --outline-variant: #dcc8e0;
+
+      /* Accents */
+      --primary: #c2207f;
+      --on-primary: #ffffff;
+      --primary-container: #f080c0;
+      --on-primary-container: #2e1a28;
+      --secondary: #7c52aa;
+      --on-secondary: #ffffff;
+      --tertiary: #0096cc;
+      --error: #c53030;
+      --on-error: #ffffff;
+
+      /* Semantic */
+      --positive: #15803d;
+      --positive-bright: #22c55e;
+      --positive-bg: #dcfce7;
+      --error-bright: #ef4444;
+      --error-bg: #fee2e2;
+      --warning: #d96a00;
+      --warning-bg: #fef3c7;
+      --focus: #c2207f;
+
+      /* Data series */
+      --data-1: #c2207f;
+      --data-2: #7c52aa;
+      --data-3: #0096cc;
+      --data-4: #d96a00;
+      --data-context: #c8b8d0;
+
+      /* Illustration tokens */
+      --svg-skin: #ffd3b6;
+      --svg-skin-shade: #f4b692;
+      --svg-skin-line: #b56c47;
+      --svg-cheek: #ff8fa3;
+      --svg-hair: #6b3e26;
+      --svg-hair-hi: #945939;
+      --svg-eye: #2e1a28;
+      --svg-iris: #0096cc;
+      --svg-lip: #d6386c;
+      --svg-tongue: #ff7597;
+      --svg-shirt: #7c52aa;
+      --svg-shirt-light: #a57fd1;
+      --svg-focus-ring: #ff9f1c;
+      --svg-focus-fill: #fff3b0;
+      --svg-white: #ffffff;
+      --svg-gold: #f59e0b;
+      --svg-gold-light: #fde68a;
+      --svg-sock: #0096cc;
+
+      /* Fonts */
+      --font-headline: 'DM Sans', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-label: 'DM Sans', sans-serif;
+
+      /* Type scale */
+      --display-size: clamp(1.65rem, 1.2rem + 2.2vw, 2.5rem);
+      --headline-size: clamp(1.15rem, 1rem + 0.8vw, 1.55rem);
+      --subhead-size: clamp(0.95rem, 0.9rem + 0.3vw, 1.125rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1.05rem);
+      --label-size: 0.75rem;
+
+      /* Shape */
+      --rounded: 1.25rem;
+      --rounded-lg: 2rem;
+      --rounded-full: 9999px;
+
+      /* Spacing scale */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.25rem;
+      --space-2xl: 3.5rem;
+
+      /* Style effects */
+      --shadow-pink: 0 6px 20px rgb(194 32 127 / 0.18);
+      --shadow-pink-deep: 0 12px 30px rgb(194 32 127 / 0.28);
+      --shadow-grape: 0 6px 20px rgb(124 82 170 / 0.2);
+      --shadow-sky: 0 6px 20px rgb(0 150 204 / 0.2);
+      --shadow-positive: 0 0 0 4px rgb(34 197 94 / 0.32), 0 8px 24px rgb(21 128 61 / 0.28);
+      --shadow-error: 0 0 0 4px rgb(239 68 68 / 0.28), 0 8px 20px rgb(197 48 48 / 0.24);
+      --pop-scale: scale(1.03);
+      --press-scale: scale(0.97);
+      --lift: translateY(-4px);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 220ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header {
+      position: static !important;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* App Shell: strict 100dvh no-scroll fit */
+    .app-shell {
+      height: 100dvh;
+      max-height: 100dvh;
+      width: 100%;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: var(--space-md) var(--space-lg);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: var(--space-md);
+      overflow: hidden;
+    }
+
+    .app-shell * {
+      min-width: 0;
+    }
+
+    /* Top HUD Header */
+    .hud-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      min-height: 48px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: var(--surface-container-low);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      box-shadow: var(--shadow-grape);
+      font-weight: 800;
+      font-size: var(--subhead-size);
+      letter-spacing: -0.02em;
+      color: var(--on-surface);
+      white-space: nowrap;
+    }
+
+    .brand-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: var(--rounded-full);
+      background: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .hud-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      max-width: 340px;
+    }
+
+    .hud-center[hidden] {
+      display: none;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--on-surface-variant);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 12px;
+      background: var(--surface-container-high);
+      border-radius: var(--rounded-full);
+      overflow: hidden;
+      padding: 2px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--tertiary);
+      border-radius: var(--rounded-full);
+      transition: width var(--dur-long) var(--ease-bounce);
+    }
+
+    .hud-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      font-weight: 800;
+      font-size: var(--subhead-size);
+      font-variant-numeric: tabular-nums;
+      min-height: 44px;
+      white-space: nowrap;
+    }
+
+    .score-pill[hidden] {
+      display: none;
+    }
+
+    .sound-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      min-width: 44px;
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      box-shadow: var(--shadow-sky);
+      font-weight: 700;
+      font-size: var(--label-size);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  box-shadow var(--dur-short) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .sound-btn:hover {
+      transform: var(--pop-scale);
+    }
+
+    .sound-btn:active {
+      transform: var(--press-scale);
+    }
+
+    .sound-btn[aria-pressed="false"] {
+      background: var(--surface-container-high);
+      color: var(--on-surface-variant);
+      box-shadow: none;
+    }
+
+    /* Main Stage */
+    .stage {
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      animation: screenPop var(--dur-long) var(--ease-bounce);
+    }
+
+    .screen[hidden] {
+      display: none;
+    }
+
+    /* Cards & Panels */
+    .hero-card {
+      width: 100%;
+      max-width: 680px;
+      max-height: 100%;
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--shadow-pink-deep);
+      padding: clamp(1.25rem, 2.5vh, 2.5rem) clamp(1.25rem, 3vw, 2.5rem);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: clamp(0.75rem, 2vh, 1.5rem);
+      overflow: hidden;
+    }
+
+    .sticker-strip {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .mini-sticker {
+      width: clamp(56px, 9vh, 80px);
+      height: clamp(56px, 9vh, 80px);
+      border-radius: var(--rounded);
+      background: var(--surface-container);
+      display: grid;
+      place-items: center;
+      padding: var(--space-xs);
+      box-shadow: var(--shadow-sky);
+      flex-shrink: 0;
+    }
+
+    .mini-sticker:nth-child(2) {
+      box-shadow: var(--shadow-pink);
+      transform: rotate(-3deg);
+    }
+
+    .mini-sticker:nth-child(3) {
+      box-shadow: var(--shadow-grape);
+      transform: rotate(3deg);
+    }
+
+    .kicker {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--secondary);
+      margin: 0;
+    }
+
+    .display {
+      font-family: var(--font-headline);
+      font-weight: 900;
+      font-size: var(--display-size);
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      color: var(--on-surface);
+      margin: 0;
+    }
+
+    .display em {
+      font-style: normal;
+      color: var(--primary);
+    }
+
+    .lead-text {
+      margin: 0;
+      color: var(--on-surface-variant);
+      font-size: var(--body-size);
+      line-height: 1.55;
+      max-width: 54ch;
+    }
+
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+    }
+
+    .tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      background: var(--surface-container);
+      color: var(--secondary);
+      font-weight: 700;
+      font-size: var(--label-size);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .tag-pill.is-pink {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+    }
+
+    /* Primary & Secondary Pill Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      min-height: 52px;
+      padding: var(--space-sm) var(--space-xl);
+      border-radius: var(--rounded-full);
+      font-weight: 800;
+      font-size: var(--subhead-size);
+      letter-spacing: -0.01em;
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  box-shadow var(--dur-short) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+      box-shadow: var(--shadow-pink);
+    }
+
+    .btn-primary:hover {
+      transform: var(--pop-scale);
+      box-shadow: var(--shadow-pink-deep);
+    }
+
+    .btn-primary:active {
+      transform: var(--press-scale);
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: var(--on-secondary);
+      box-shadow: var(--shadow-grape);
+    }
+
+    .btn-secondary:hover {
+      transform: var(--pop-scale);
+    }
+
+    .btn-secondary:active {
+      transform: var(--press-scale);
+    }
+
+    /* Quiz Card Layout (Fits strictly inside 100dvh) */
+    .quiz-card {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--shadow-pink);
+      padding: clamp(0.875rem, 2.2vh, 1.75rem) clamp(1rem, 2.5vw, 2rem);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      gap: clamp(0.625rem, 1.8vh, 1.25rem);
+      overflow: hidden;
+    }
+
+    .question-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-sm);
+    }
+
+    .question-title {
+      font-family: var(--font-headline);
+      font-weight: 800;
+      font-size: var(--headline-size);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0;
+      color: var(--on-surface);
+    }
+
+    .question-title em {
+      font-style: normal;
+      color: var(--primary);
+    }
+
+    .q-badge {
+      background: var(--surface-container);
+      color: var(--secondary);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: var(--rounded-full);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Illustration Well */
+    .illustration-well {
+      width: 100%;
+      height: 100%;
+      min-height: 120px;
+      background: var(--surface-container);
+      border-radius: var(--rounded);
+      display: grid;
+      place-items: center;
+      padding: clamp(0.5rem, 1.5vh, 1.25rem);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .illustration-well svg {
+      width: 100%;
+      height: 100%;
+      max-height: clamp(135px, 34vh, 270px);
+      max-width: 320px;
+      display: block;
+    }
+
+    /* 3 Options Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(0.5rem, 1.5vw, 1rem);
+    }
+
+    .option-btn {
+      min-height: clamp(54px, 8vh, 72px);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-low);
+      color: var(--on-surface);
+      border: 3px solid var(--outline-variant);
+      box-shadow: var(--shadow-grape);
+      font-family: var(--font-headline);
+      font-weight: 800;
+      font-size: clamp(1rem, 0.9rem + 0.6vw, 1.25rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      transition: transform var(--dur-short) var(--ease-bounce),
+                  box-shadow var(--dur-short) var(--ease-out),
+                  background-color var(--dur-micro) var(--ease-out),
+                  border-color var(--dur-micro) var(--ease-out);
+      position: relative;
+    }
+
+    .option-btn:nth-child(2) {
+      box-shadow: var(--shadow-sky);
+    }
+
+    .option-btn:nth-child(3) {
+      box-shadow: var(--shadow-pink);
+    }
+
+    .option-btn:not(:disabled):hover {
+      transform: var(--lift);
+      border-color: var(--primary);
+    }
+
+    .option-btn:not(:disabled):active {
+      transform: var(--press-scale);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-key {
+      width: 26px;
+      height: 26px;
+      border-radius: var(--rounded-full);
+      background: var(--surface-container-high);
+      color: var(--on-surface-variant);
+      font-size: var(--label-size);
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .option-btn.is-correct {
+      background: var(--positive-bg);
+      border-color: var(--positive-bright);
+      color: var(--positive);
+      box-shadow: var(--shadow-positive);
+      transform: var(--pop-scale);
+    }
+
+    .option-btn.is-correct .option-key {
+      background: var(--positive);
+      color: var(--on-primary);
+    }
+
+    .option-btn.is-wrong {
+      background: var(--error-bg);
+      border-color: var(--error-bright);
+      color: var(--error);
+      box-shadow: var(--shadow-error);
+      animation: gentleShake 420ms var(--ease-out);
+    }
+
+    .option-btn.is-wrong .option-key {
+      background: var(--error);
+      color: var(--on-error);
+    }
+
+    .option-btn.is-muted {
+      opacity: 0.62;
+      box-shadow: none;
+    }
+
+    /* Feedback & Next Row */
+    .feedback-row {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      background: var(--surface-container);
+      border-radius: var(--rounded-full);
+      padding: var(--space-xs) var(--space-sm) var(--space-xs) var(--space-md);
+      transition: background-color var(--dur-short) var(--ease-out);
+    }
+
+    .feedback-row.is-idle {
+      background: transparent;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .feedback-row.is-correct {
+      background: var(--positive-bg);
+    }
+
+    .feedback-row.is-wrong {
+      background: var(--error-bg);
+    }
+
+    .feedback-msg {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-weight: 700;
+      font-size: var(--body-size);
+      color: var(--on-surface-variant);
+    }
+
+    .feedback-row.is-correct .feedback-msg {
+      color: var(--positive);
+    }
+
+    .feedback-row.is-wrong .feedback-msg {
+      color: var(--error);
+    }
+
+    .next-btn {
+      min-height: 44px;
+      padding: var(--space-xs) var(--space-lg);
+      font-size: var(--body-size);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .next-btn[hidden] {
+      display: none;
+    }
+
+    /* End Screen */
+    .end-card {
+      width: 100%;
+      max-width: 620px;
+      max-height: 100%;
+      background: var(--surface-container-low);
+      border-radius: var(--rounded-lg);
+      box-shadow: var(--shadow-pink-deep);
+      padding: clamp(1.25rem, 3vh, 2.5rem) clamp(1.25rem, 3vw, 2.5rem);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: clamp(0.75rem, 2vh, 1.25rem);
+      overflow: hidden;
+    }
+
+    .trophy-badge {
+      width: clamp(76px, 13vh, 108px);
+      height: clamp(76px, 13vh, 108px);
+      border-radius: var(--rounded-full);
+      background: var(--warning-bg);
+      box-shadow: var(--shadow-pink);
+      display: grid;
+      place-items: center;
+      font-size: clamp(2.5rem, 6vh, 3.75rem);
+      line-height: 1;
+      animation: trophyPop var(--dur-long) var(--ease-bounce);
+    }
+
+    .final-score-box {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: var(--space-xs);
+      background: var(--surface-container);
+      padding: var(--space-md) var(--space-xl);
+      border-radius: var(--rounded);
+      box-shadow: var(--shadow-sky);
+    }
+
+    .final-score-num {
+      font-family: var(--font-headline);
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vh, 3.75rem);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .final-score-max {
+      font-weight: 800;
+      font-size: var(--headline-size);
+      color: var(--on-surface-variant);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+
+    @keyframes screenPop {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes trophyPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.6) rotate(-8deg);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+      }
+    }
+
+    @keyframes gentleShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(4px); }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell {
+        padding: var(--space-sm);
+        gap: var(--space-sm);
+      }
+
+      .hud-header {
+        gap: var(--space-sm);
+      }
+
+      .brand-pill {
+        font-size: var(--body-size);
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .hud-center {
+        max-width: none;
+      }
+
+      .sound-label {
+        display: none;
+      }
+
+      .quiz-card {
+        padding: var(--space-md);
+        gap: var(--space-sm);
+      }
+
+      .illustration-well svg {
+        max-height: clamp(115px, 26vh, 195px);
+      }
+
+      .options-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-sm);
+      }
+
+      .option-btn {
+        min-height: 48px;
+        justify-content: flex-start;
+        padding: var(--space-xs) var(--space-md);
+      }
+
+      .feedback-row {
+        min-height: 48px;
+        padding: var(--space-xs) var(--space-sm);
+      }
+
+      .feedback-msg {
+        font-size: var(--label-size);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hud-header">
+      <div class="brand-pill">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Vücudumuz</span>
+      </div>
+
+      <div id="hud-center" class="hud-center" hidden>
+        <div class="progress-meta">
+          <span id="progress-label">Soru 1 / 14</span>
+          <span id="progress-percent">%7</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <div id="score-pill" class="score-pill" hidden>
+          <span>Puan:</span>
+          <span id="score-value">0</span>
+        </div>
+        <button
+          id="sound-toggle"
+          type="button"
+          class="sound-btn"
+          aria-pressed="true"
+          aria-label="Ses efektlerini aç veya kapat"
+          onclick="toggleSound()"
+        >
+          <svg id="sound-icon-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg id="sound-icon-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+          <span id="sound-label" class="sound-label">Ses Açık</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="stage">
+      <!-- Start Screen -->
+      <section id="start-screen" class="screen" aria-labelledby="start-title">
+        <div class="hero-card">
+          <div class="sticker-strip" aria-hidden="true">
+            <div class="mini-sticker" id="preview-sticker-1"></div>
+            <div class="mini-sticker" id="preview-sticker-2"></div>
+            <div class="mini-sticker" id="preview-sticker-3"></div>
+          </div>
+          <p class="kicker">Eğlenceli Türkçe Öğrenme</p>
+          <h1 id="start-title" class="display">Vücudumuzun <em>Bölümleri</em> Oyunu</h1>
+          <p class="lead-text">
+            Renkli resimlere dikkatlice bak ve doğru vücut bölümünü seç! 14 eğlenceli sorunun hepsini çözerek 100 tam puan kazanabilirsin.
+          </p>
+          <div class="feature-pills">
+            <span class="tag-pill is-pink">14 Vücut Bölümü</span>
+            <span class="tag-pill">3 Seçenekli Sorular</span>
+            <span class="tag-pill">Sesli Efektler</span>
+          </div>
+          <button id="start-btn" type="button" class="btn btn-primary" onclick="startGame()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="6 4 20 12 6 20 6 4"></polygon>
+            </svg>
+            <span>Oyuna Başla</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Quiz Screen -->
+      <section id="quiz-screen" class="screen" aria-labelledby="question-title" hidden>
+        <div class="quiz-card">
+          <div class="question-header">
+            <h2 id="question-title" class="question-title">Bu hangi <em>vücut</em> bölümümüz?</h2>
+            <span id="q-counter-badge" class="q-badge">1 / 14</span>
+          </div>
+
+          <div id="illustration-well" class="illustration-well" role="img" aria-label="Vücut bölümü görseli"></div>
+
+          <div id="options-grid" class="options-grid" role="group" aria-label="Cevap seçenekleri"></div>
+
+          <div id="feedback-row" class="feedback-row is-idle" aria-live="polite">
+            <div id="feedback-msg" class="feedback-msg">
+              <span>Doğru seçeneğe dokun!</span>
+            </div>
+            <button id="next-btn" type="button" class="btn btn-secondary next-btn" onclick="goNextQuestion()" hidden>
+              <span>Sonraki Soru</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- End Screen -->
+      <section id="end-screen" class="screen" aria-labelledby="end-title" hidden>
+        <div class="end-card">
+          <div class="trophy-badge" aria-hidden="true">🏆</div>
+          <p class="kicker">Oyun Tamamlandı</p>
+          <h2 id="end-title" class="display">Tebrikler <em>Şampiyon!</em></h2>
+          <div class="final-score-box">
+            <span id="final-score-num" class="final-score-num">100</span>
+            <span class="final-score-max">/ 100</span>
+          </div>
+          <p id="end-message" class="lead-text">Harikasın! Vücudumuzun tüm bölümlerini süper biliyorsun.</p>
+          <div class="stats-row">
+            <span id="stat-correct" class="tag-pill is-pink">14 Doğru</span>
+            <span id="stat-wrong" class="tag-pill">0 Yanlış</span>
+          </div>
+          <button id="replay-btn" type="button" class="btn btn-primary" onclick="restartGame()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            <span>Tekrar Oyna</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const BODY_PARTS = [
+      {
+        id: `sac`,
+        name: `Saç`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="95" r="80" fill="var(--svg-focus-fill)" opacity="0.55"/>
+            <!-- Neck & Shoulders -->
+            <path d="M84 148 L84 176 L136 176 L136 148 Z" fill="var(--svg-skin-shade)"/>
+            <path d="M60 182 Q110 162 160 182 L160 190 L60 190 Z" fill="var(--svg-shirt)"/>
+            <!-- Face base -->
+            <ellipse cx="110" cy="108" rx="44" ry="48" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <ellipse cx="78" cy="116" rx="7" ry="4.5" fill="var(--svg-cheek)" opacity="0.65"/>
+            <ellipse cx="142" cy="116" rx="7" ry="4.5" fill="var(--svg-cheek)" opacity="0.65"/>
+            <circle cx="94" cy="106" r="4.5" fill="var(--svg-eye)"/>
+            <circle cx="126" cy="106" r="4.5" fill="var(--svg-eye)"/>
+            <path d="M98 126 Q110 136 122 126" fill="none" stroke="var(--svg-lip)" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Highlighted Lush Hair -->
+            <path d="M56 105 C46 58, 72 24, 112 24 C152 24, 174 56, 164 105 C158 84, 146 66, 126 62 C118 76, 98 78, 84 64 C70 72, 62 88, 56 105 Z" fill="var(--svg-hair)" stroke="var(--svg-eye)" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M74 48 Q106 32 138 46" fill="none" stroke="var(--svg-hair-hi)" stroke-width="5" stroke-linecap="round"/>
+            <path d="M84 36 Q112 28 134 38" fill="none" stroke="var(--svg-hair-hi)" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Focus sparkles & arrow on hair -->
+            <circle cx="154" cy="46" r="11" fill="var(--primary)" stroke="var(--svg-white)" stroke-width="2.5"/>
+            <path d="M154 40 L154 52 M148 46 L160 46" stroke="var(--svg-white)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M40 44 L58 56" stroke="var(--svg-focus-ring)" stroke-width="4" stroke-linecap="round"/>
+            <polygon points="64,60 52,59 58,49" fill="var(--svg-focus-ring)"/>
+          </svg>
+        `
+      },
+      {
+        id: `goz`,
+        name: `Göz`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="98" r="76" fill="var(--svg-focus-fill)" opacity="0.5"/>
+            <!-- Eyebrow -->
+            <path d="M52 58 Q110 32 168 58" fill="none" stroke="var(--svg-hair)" stroke-width="11" stroke-linecap="round"/>
+            <!-- Eyelashes -->
+            <path d="M46 86 L34 72 M72 68 L64 52 M110 60 L110 42 M148 68 L156 52 M174 86 L186 72" stroke="var(--svg-eye)" stroke-width="4.5" stroke-linecap="round"/>
+            <!-- Eye White -->
+            <path d="M36 104 Q110 44 184 104 Q110 164 36 104 Z" fill="var(--svg-white)" stroke="var(--svg-eye)" stroke-width="4" stroke-linejoin="round"/>
+            <!-- Iris & Pupil -->
+            <circle cx="110" cy="104" r="32" fill="var(--svg-iris)" stroke="var(--svg-eye)" stroke-width="3"/>
+            <circle cx="110" cy="104" r="16" fill="var(--svg-eye)"/>
+            <!-- Catchlights -->
+            <circle cx="121" cy="92" r="7" fill="var(--svg-white)"/>
+            <circle cx="98" cy="114" r="3.5" fill="var(--svg-white)"/>
+          </svg>
+        `
+      },
+      {
+        id: `agiz`,
+        name: `Ağız`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="98" r="76" fill="var(--svg-focus-fill)" opacity="0.5"/>
+            <!-- Soft cheeks -->
+            <circle cx="48" cy="96" r="14" fill="var(--svg-cheek)" opacity="0.45"/>
+            <circle cx="172" cy="96" r="14" fill="var(--svg-cheek)" opacity="0.45"/>
+            <!-- Mouth interior -->
+            <path d="M48 84 Q110 92 172 84 C166 142, 140 156, 110 156 C80 156, 54 142, 48 84 Z" fill="var(--svg-eye)" stroke="var(--svg-lip)" stroke-width="6" stroke-linejoin="round"/>
+            <!-- Upper Teeth -->
+            <path d="M62 88 Q110 94 158 88 L154 106 Q110 112 66 106 Z" fill="var(--svg-white)"/>
+            <!-- Tongue -->
+            <path d="M78 142 Q110 114 142 142 Q110 156 78 142 Z" fill="var(--svg-tongue)"/>
+            <!-- Upper Lip Bow -->
+            <path d="M44 84 Q80 62 110 76 Q140 62 176 84 Q142 94 110 90 Q78 94 44 84 Z" fill="var(--svg-lip)"/>
+          </svg>
+        `
+      },
+      {
+        id: `boyun`,
+        name: `Boyun`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <!-- Shoulders & Shirt -->
+            <path d="M42 178 C46 144, 78 138, 110 138 C142 138, 174 144, 178 178 Z" fill="var(--svg-shirt)" stroke="var(--svg-eye)" stroke-width="3"/>
+            <!-- Highlighted Neck -->
+            <rect x="86" y="102" width="48" height="48" rx="14" fill="var(--svg-skin)" stroke="var(--svg-focus-ring)" stroke-width="5"/>
+            <path d="M90 114 Q110 124 130 114" fill="none" stroke="var(--svg-skin-shade)" stroke-width="5" stroke-linecap="round"/>
+            <!-- Head above (subtle context) -->
+            <ellipse cx="110" cy="64" rx="44" ry="44" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <path d="M68 56 C70 24, 150 24, 152 56 C136 42, 84 42, 68 56 Z" fill="var(--svg-hair)"/>
+            <circle cx="94" cy="64" r="3.5" fill="var(--svg-eye)"/>
+            <circle cx="126" cy="64" r="3.5" fill="var(--svg-eye)"/>
+            <path d="M98 82 Q110 90 122 82" fill="none" stroke="var(--svg-lip)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Focus Ring & Arrows pointing directly to Neck -->
+            <ellipse cx="110" cy="126" rx="34" ry="16" fill="none" stroke="var(--primary)" stroke-width="4" stroke-dasharray="7 5"/>
+            <path d="M36 126 L68 126" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="75,126 62,118 62,134" fill="var(--primary)"/>
+            <path d="M184 126 L152 126" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="145,126 158,118 158,134" fill="var(--primary)"/>
+          </svg>
+        `
+      },
+      {
+        id: `avuc`,
+        name: `Avuç`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="98" r="76" fill="var(--svg-focus-fill)" opacity="0.45"/>
+            <!-- Open Hand -->
+            <path d="M78 176 L78 142 C66 134, 52 116, 46 104 C42 96, 52 88, 59 95 L72 112 L72 52 C72 43, 84 43, 84 52 L86 95 L92 36 C92 27, 105 27, 105 36 L106 92 L114 34 C114 25, 127 25, 127 34 L126 94 L136 46 C137 37, 149 39, 148 48 L140 108 C144 134, 134 152, 128 176 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5" stroke-linejoin="round"/>
+            <!-- Brightly Highlighted Palm Center -->
+            <circle cx="107" cy="126" r="24" fill="var(--svg-focus-fill)" stroke="var(--primary)" stroke-width="4.5"/>
+            <path d="M94 122 Q107 114 120 124" fill="none" stroke="var(--svg-skin-line)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M96 134 Q108 128 118 136" fill="none" stroke="var(--svg-skin-line)" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Arrow pointing to the Palm -->
+            <path d="M168 144 L138 132" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="131,129 145,127 140,139" fill="var(--primary)"/>
+          </svg>
+        `
+      },
+      {
+        id: `parmak`,
+        name: `Parmak`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="95" r="76" fill="var(--svg-focus-fill)" opacity="0.45"/>
+            <!-- Hand Fist with 1 Index Finger Raised -->
+            <path d="M78 176 L78 136 C68 128, 66 112, 74 102 L74 92 C74 82, 86 82, 86 92 L86 36 C86 24, 104 24, 104 36 L104 88 C114 86, 124 90, 126 98 C134 96, 144 100, 146 110 C154 112, 158 124, 150 136 L138 156 L138 176 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5" stroke-linejoin="round"/>
+            <!-- Curled fingers detail -->
+            <rect x="104" y="88" width="18" height="28" rx="9" fill="var(--svg-skin-shade)" stroke="var(--svg-skin-line)" stroke-width="2.5"/>
+            <rect x="122" y="92" width="16" height="26" rx="8" fill="var(--svg-skin-shade)" stroke="var(--svg-skin-line)" stroke-width="2.5"/>
+            <rect x="138" y="98" width="15" height="24" rx="7.5" fill="var(--svg-skin-shade)" stroke="var(--svg-skin-line)" stroke-width="2.5"/>
+            <!-- Thumb across -->
+            <path d="M74 116 Q96 106 112 118 Q112 132 90 134 Q74 132 74 116 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="2.5"/>
+            <!-- Nail on Index Finger -->
+            <rect x="89" y="31" width="12" height="14" rx="5" fill="var(--svg-white)" opacity="0.85"/>
+            <!-- Focus Ring & Arrow pointing to the Finger -->
+            <circle cx="95" cy="52" r="22" fill="none" stroke="var(--primary)" stroke-width="4.5" stroke-dasharray="6 4"/>
+            <path d="M44 52 L66 52" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="73,52 60,44 60,60" fill="var(--primary)"/>
+          </svg>
+        `
+      },
+      {
+        id: `diz`,
+        name: `Diz`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="116" cy="94" r="76" fill="var(--svg-focus-fill)" opacity="0.45"/>
+            <!-- Shorts / Upper leg -->
+            <path d="M46 38 L92 34 L108 76 L58 88 Z" fill="var(--svg-shirt)" stroke="var(--svg-eye)" stroke-width="3" stroke-linejoin="round"/>
+            <!-- Bent Leg showing Knee Joint -->
+            <path d="M62 84 L106 72 C128 70, 144 84, 140 106 L124 166 L94 166 L104 110 L62 114 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5" stroke-linejoin="round"/>
+            <!-- Shoe/Foot at bottom -->
+            <path d="M92 162 L134 162 C146 162, 152 174, 142 178 L92 178 Z" fill="var(--svg-sock)" stroke="var(--svg-eye)" stroke-width="3"/>
+            <!-- Bright Highlight Circle on Knee -->
+            <circle cx="122" cy="92" r="22" fill="var(--svg-focus-fill)" opacity="0.7" stroke="var(--primary)" stroke-width="4.5"/>
+            <path d="M120 82 Q130 92 120 102" fill="none" stroke="var(--svg-skin-line)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Arrow to Knee -->
+            <path d="M174 82 L150 88" stroke="var(--primary)" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="143,90 154,80 158,95" fill="var(--primary)"/>
+          </svg>
+        `
+      },
+      {
+        id: `ayak`,
+        name: `Ayak`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="112" cy="102" r="74" fill="var(--svg-focus-fill)" opacity="0.5"/>
+            <!-- Lower ankle -->
+            <path d="M64 34 L102 34 L106 86 C118 106, 156 112, 174 126 C184 134, 180 152, 164 154 L76 154 C54 154, 48 134, 56 114 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="4" stroke-linejoin="round"/>
+            <!-- Ankle cuff hint -->
+            <path d="M62 34 L104 34" stroke="var(--svg-shirt)" stroke-width="10" stroke-linecap="round"/>
+            <!-- Toes -->
+            <ellipse cx="172" cy="138" rx="10" ry="8" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <circle cx="160" cy="148" r="6" fill="var(--svg-skin-shade)"/>
+            <circle cx="172" cy="135" r="3.5" fill="var(--svg-white)" opacity="0.8"/>
+            <!-- Ground shadow line -->
+            <ellipse cx="116" cy="164" rx="68" ry="8" fill="var(--svg-focus-ring)" opacity="0.28"/>
+            <!-- Subtle highlight underline -->
+            <path d="M62 162 L172 162" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-dasharray="8 6"/>
+          </svg>
+        `
+      },
+      {
+        id: `bacak`,
+        name: `Bacak`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="95" r="76" fill="var(--svg-focus-fill)" opacity="0.45"/>
+            <!-- Shorts waist -->
+            <path d="M74 20 L146 20 L154 60 L114 60 L110 48 L106 60 L66 60 Z" fill="var(--svg-shirt)" stroke="var(--svg-eye)" stroke-width="3" stroke-linejoin="round"/>
+            <!-- Left Leg -->
+            <path d="M74 60 L102 60 L100 156 L76 156 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <!-- Right Leg -->
+            <path d="M118 60 L146 60 L144 156 L120 156 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <!-- Shoes -->
+            <path d="M64 156 L102 156 L102 172 L56 172 C52 172, 54 156, 64 156 Z" fill="var(--svg-sock)" stroke="var(--svg-eye)" stroke-width="2.5"/>
+            <path d="M118 156 L156 156 C166 156, 168 172, 164 172 L118 172 Z" fill="var(--svg-sock)" stroke="var(--svg-eye)" stroke-width="2.5"/>
+            <!-- Full-Leg Bracket Highlight -->
+            <path d="M52 60 L42 60 L42 156 L52 156" fill="none" stroke="var(--primary)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M168 60 L178 60 L178 156 L168 156" fill="none" stroke="var(--primary)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `
+      },
+      {
+        id: `el`,
+        name: `El`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="95" r="76" fill="var(--svg-focus-fill)" opacity="0.5"/>
+            <!-- Wristband -->
+            <rect x="80" y="152" width="54" height="22" rx="8" fill="var(--svg-sock)" stroke="var(--svg-eye)" stroke-width="3"/>
+            <!-- Full Hand with 5 spread fingers -->
+            <path d="M82 152 L82 134 C66 126, 48 106, 44 92 C40 82, 52 76, 60 85 L76 106 L74 44 C74 34, 87 34, 88 44 L91 92 L98 28 C99 18, 112 18, 112 28 L112 88 L120 32 C121 22, 134 23, 134 33 L130 92 L144 48 C147 39, 159 43, 156 52 L142 108 C144 126, 136 140, 132 152 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5" stroke-linejoin="round"/>
+            <!-- Happy waving motion lines -->
+            <path d="M32 68 Q26 52 36 40" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M174 58 Q182 44 172 30" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        `
+      },
+      {
+        id: `kol`,
+        name: `Kol`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="114" cy="95" r="76" fill="var(--svg-focus-fill)" opacity="0.45"/>
+            <!-- T-shirt sleeve at left shoulder -->
+            <path d="M36 96 C36 74, 54 64, 72 68 L84 114 L42 122 Z" fill="var(--svg-shirt)" stroke="var(--svg-eye)" stroke-width="3" stroke-linejoin="round"/>
+            <!-- Full Bent Arm -->
+            <path d="M62 118 L96 110 C110 108, 118 100, 126 84 L142 52 L166 64 L148 110 C138 134, 120 144, 96 146 L52 146 C42 146, 40 124, 62 118 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5" stroke-linejoin="round"/>
+            <!-- Fist at end of arm -->
+            <circle cx="158" cy="48" r="18" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5"/>
+            <path d="M148 44 Q158 40 168 44" fill="none" stroke="var(--svg-skin-line)" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Arm length highlight arc -->
+            <path d="M64 162 Q128 164 164 102" fill="none" stroke="var(--primary)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="8 6"/>
+          </svg>
+        `
+      },
+      {
+        id: `burun`,
+        name: `Burun`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="110" cy="95" r="76" fill="var(--svg-focus-fill)" opacity="0.5"/>
+            <!-- Soft face context -->
+            <circle cx="56" cy="116" r="16" fill="var(--svg-cheek)" opacity="0.45"/>
+            <circle cx="164" cy="116" r="16" fill="var(--svg-cheek)" opacity="0.45"/>
+            <!-- Subtle eye hints far above/side -->
+            <path d="M62 56 Q74 48 86 56" fill="none" stroke="var(--svg-eye)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+            <path d="M134 56 Q146 48 158 56" fill="none" stroke="var(--svg-eye)" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+            <!-- Cute Prominent Nose -->
+            <path d="M100 44 L94 96 C78 102, 74 124, 92 132 C102 138, 118 138, 128 132 C146 124, 142 102, 126 96 L120 44" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Nostrils -->
+            <ellipse cx="94" cy="120" rx="6" ry="4" fill="var(--svg-skin-line)"/>
+            <ellipse cx="126" cy="120" rx="6" ry="4" fill="var(--svg-skin-line)"/>
+            <!-- Nose tip highlight -->
+            <ellipse cx="110" cy="106" rx="10" ry="6" fill="var(--svg-white)" opacity="0.6"/>
+            <!-- Scent / breeze swirls -->
+            <path d="M52 140 Q68 134 74 146" fill="none" stroke="var(--tertiary)" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M168 140 Q152 134 146 146" fill="none" stroke="var(--tertiary)" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        `
+      },
+      {
+        id: `yuz`,
+        name: `Yüz`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <!-- Circle frame around whole face -->
+            <circle cx="110" cy="95" r="78" fill="var(--svg-focus-fill)" stroke="var(--primary)" stroke-width="4" stroke-dasharray="10 6"/>
+            <!-- Ears -->
+            <circle cx="56" cy="98" r="12" fill="var(--svg-skin-shade)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <circle cx="164" cy="98" r="12" fill="var(--svg-skin-shade)" stroke="var(--svg-skin-line)" stroke-width="3"/>
+            <!-- Cheerful Face -->
+            <ellipse cx="110" cy="98" rx="52" ry="56" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="3.5"/>
+            <!-- Minimal hair fringe -->
+            <path d="M62 76 C68 38, 152 38, 158 76 C138 56, 82 56, 62 76 Z" fill="var(--svg-hair)"/>
+            <!-- Eyes -->
+            <circle cx="90" cy="94" r="6.5" fill="var(--svg-eye)"/>
+            <circle cx="130" cy="94" r="6.5" fill="var(--svg-eye)"/>
+            <circle cx="92" cy="92" r="2.2" fill="var(--svg-white)"/>
+            <circle cx="132" cy="92" r="2.2" fill="var(--svg-white)"/>
+            <!-- Cheeks -->
+            <ellipse cx="76" cy="110" rx="9" ry="5.5" fill="var(--svg-cheek)" opacity="0.7"/>
+            <ellipse cx="144" cy="110" rx="9" ry="5.5" fill="var(--svg-cheek)" opacity="0.7"/>
+            <!-- Nose -->
+            <path d="M107 104 Q110 112 113 104" fill="none" stroke="var(--svg-skin-line)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Big Smile -->
+            <path d="M88 122 Q110 142 132 122" fill="none" stroke="var(--svg-lip)" stroke-width="4.5" stroke-linecap="round"/>
+          </svg>
+        `
+      },
+      {
+        id: `kulak`,
+        name: `Kulak`,
+        svg: `
+          <svg viewBox="0 0 220 190" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="104" cy="95" r="76" fill="var(--svg-focus-fill)" opacity="0.5"/>
+            <!-- Side of cheek/hair context -->
+            <path d="M40 34 C72 34, 84 64, 84 98 C84 134, 72 158, 44 162" fill="var(--svg-skin-shade)" opacity="0.45"/>
+            <!-- Prominent Ear -->
+            <path d="M74 62 C74 34, 134 32, 138 74 C142 104, 126 116, 122 132 C118 152, 92 158, 82 142 C74 130, 74 102, 74 62 Z" fill="var(--svg-skin)" stroke="var(--svg-skin-line)" stroke-width="4.5" stroke-linejoin="round"/>
+            <!-- Inner ear folds -->
+            <path d="M90 66 C94 50, 122 52, 122 78 C122 96, 106 100, 104 114 C102 126, 92 126, 90 116" fill="none" stroke="var(--svg-skin-line)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M90 92 Q104 88 106 102" fill="none" stroke="var(--svg-skin-line)" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Sound waves beside the ear -->
+            <path d="M154 74 Q168 94 154 114" fill="none" stroke="var(--primary)" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M168 62 Q188 94 168 126" fill="none" stroke="var(--tertiary)" stroke-width="4.5" stroke-linecap="round"/>
+          </svg>
+        `
+      }
+    ];
+
+    const TOTAL_QUESTIONS = BODY_PARTS.length;
+    const AUTO_ADVANCE_MS = 1200;
+
+    let audioCtx = null;
+    let soundEnabled = true;
+    let quizQueue = [];
+    let currentIndex = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+    let questionAnswered = false;
+    let awaitingNext = false;
+    let advanceTimer = null;
+
+    function initAudio() {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      if (!audioCtx) {
+        audioCtx = new AudioContextClass();
+      }
+      if (audioCtx.state === `suspended`) {
+        audioCtx.resume().catch(function() {});
+      }
+    }
+
+    function playTone(freq, startOffset, duration, type, volume) {
+      if (!soundEnabled || !audioCtx) return;
+      const now = audioCtx.currentTime + startOffset;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type || `sine`;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(volume || 0.16, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
+
+    function playStartSound() {
+      playTone(523.25, 0, 0.16, `triangle`, 0.15);
+      playTone(659.25, 0.09, 0.18, `triangle`, 0.15);
+      playTone(783.99, 0.18, 0.28, `sine`, 0.16);
+    }
+
+    function playCorrectSound() {
+      playTone(523.25, 0, 0.14, `triangle`, 0.16);
+      playTone(659.25, 0.08, 0.14, `triangle`, 0.16);
+      playTone(783.99, 0.16, 0.16, `sine`, 0.17);
+      playTone(1046.5, 0.24, 0.34, `sine`, 0.18);
+    }
+
+    function playWrongSound() {
+      playTone(329.63, 0, 0.18, `triangle`, 0.15);
+      playTone(246.94, 0.14, 0.28, `triangle`, 0.15);
+    }
+
+    function playVictorySound() {
+      playTone(523.25, 0, 0.15, `triangle`, 0.15);
+      playTone(659.25, 0.1, 0.15, `triangle`, 0.15);
+      playTone(783.99, 0.2, 0.15, `triangle`, 0.16);
+      playTone(1046.5, 0.3, 0.45, `sine`, 0.18);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById(`sound-toggle`);
+      const iconOn = document.getElementById(`sound-icon-on`);
+      const iconOff = document.getElementById(`sound-icon-off`);
+      const label = document.getElementById(`sound-label`);
+      if (btn) btn.setAttribute(`aria-pressed`, soundEnabled ? `true` : `false`);
+      if (iconOn) iconOn.hidden = !soundEnabled;
+      if (iconOff) iconOff.hidden = soundEnabled;
+      if (label) label.textContent = soundEnabled ? `Ses Açık` : `Ses Kapalı`;
+      if (soundEnabled) {
+        initAudio();
+        playTone(659.25, 0, 0.12, `sine`, 0.12);
+      }
+    }
+
+    function shuffleArray(arr) {
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = tmp;
+      }
+      return copy;
+    }
+
+    function computeScoreOutOf100() {
+      return Math.round((correctCount / TOTAL_QUESTIONS) * 100);
+    }
+
+    function showScreen(screenId) {
+      const screens = [`start-screen`, `quiz-screen`, `end-screen`];
+      for (let i = 0; i < screens.length; i++) {
+        const el = document.getElementById(screens[i]);
+        if (el) el.hidden = screens[i] !== screenId;
+      }
+      const hudCenter = document.getElementById(`hud-center`);
+      const scorePill = document.getElementById(`score-pill`);
+      const isQuiz = screenId === `quiz-screen`;
+      if (hudCenter) hudCenter.hidden = !isQuiz;
+      if (scorePill) scorePill.hidden = !isQuiz;
+    }
+
+    function startGame() {
+      initAudio();
+      playStartSound();
+      resetRoundState();
+      showScreen(`quiz-screen`);
+      renderQuestion();
+    }
+
+    function restartGame() {
+      initAudio();
+      playStartSound();
+      resetRoundState();
+      showScreen(`quiz-screen`);
+      renderQuestion();
+    }
+
+    function resetRoundState() {
+      if (advanceTimer) {
+        clearTimeout(advanceTimer);
+        advanceTimer = null;
+      }
+      quizQueue = shuffleArray(BODY_PARTS);
+      currentIndex = 0;
+      correctCount = 0;
+      wrongCount = 0;
+      questionAnswered = false;
+      awaitingNext = false;
+      updateHud();
+    }
+
+    function updateHud() {
+      const progressLabel = document.getElementById(`progress-label`);
+      const progressPercent = document.getElementById(`progress-percent`);
+      const progressFill = document.getElementById(`progress-fill`);
+      const scoreValue = document.getElementById(`score-value`);
+      const qBadge = document.getElementById(`q-counter-badge`);
+
+      const currentNum = Math.min(currentIndex + 1, TOTAL_QUESTIONS);
+      const pct = Math.round((currentNum / TOTAL_QUESTIONS) * 100);
+
+      if (progressLabel) progressLabel.textContent = `Soru ` + currentNum + ` / ` + TOTAL_QUESTIONS;
+      if (progressPercent) progressPercent.textContent = `%` + pct;
+      if (progressFill) progressFill.style.width = pct + `%`;
+      if (scoreValue) scoreValue.textContent = String(computeScoreOutOf100());
+      if (qBadge) qBadge.textContent = currentNum + ` / ` + TOTAL_QUESTIONS;
+    }
+
+    function buildOptionsForPart(correctPart) {
+      const others = BODY_PARTS.filter(function(item) {
+        return item.id !== correctPart.id;
+      });
+      const distractors = shuffleArray(others).slice(0, 2);
+      return shuffleArray([correctPart, distractors[0], distractors[1]]);
+    }
+
+    function renderQuestion() {
+      questionAnswered = false;
+      awaitingNext = false;
+      const currentPart = quizQueue[currentIndex];
+      if (!currentPart) {
+        showEndScreen();
+        return;
+      }
+
+      updateHud();
+
+      const well = document.getElementById(`illustration-well`);
+      if (well) {
+        well.innerHTML = currentPart.svg;
+      }
+
+      const optionsGrid = document.getElementById(`options-grid`);
+      if (optionsGrid) {
+        optionsGrid.innerHTML = ``;
+        const options = buildOptionsForPart(currentPart);
+        for (let i = 0; i < options.length; i++) {
+          const opt = options[i];
+          const btn = document.createElement(`button`);
+          btn.type = `button`;
+          btn.className = `option-btn`;
+          btn.dataset.partId = opt.id;
+          btn.setAttribute(`aria-label`, (i + 1) + `. seçenek: ` + opt.name);
+          btn.onclick = function() {
+            handleAnswer(opt.id, btn);
+          };
+
+          const keyBadge = document.createElement(`span`);
+          keyBadge.className = `option-key`;
+          keyBadge.setAttribute(`aria-hidden`, `true`);
+          keyBadge.textContent = String(i + 1);
+
+          const labelSpan = document.createElement(`span`);
+          labelSpan.textContent = opt.name;
+
+          btn.appendChild(keyBadge);
+          btn.appendChild(labelSpan);
+          optionsGrid.appendChild(btn);
+        }
+      }
+
+      const feedbackRow = document.getElementById(`feedback-row`);
+      const feedbackMsg = document.getElementById(`feedback-msg`);
+      const nextBtn = document.getElementById(`next-btn`);
+      if (feedbackRow) {
+        feedbackRow.className = `feedback-row is-idle`;
+      }
+      if (feedbackMsg) {
+        feedbackMsg.textContent = `Doğru seçeneğe dokun!`;
+      }
+      if (nextBtn) {
+        nextBtn.hidden = true;
+      }
+    }
+
+    function handleAnswer(selectedId, selectedBtn) {
+      if (questionAnswered) return;
+      questionAnswered = true;
+
+      const currentPart = quizQueue[currentIndex];
+      const isCorrect = selectedId === currentPart.id;
+      const optionsGrid = document.getElementById(`options-grid`);
+      const buttons = optionsGrid ? optionsGrid.querySelectorAll(`.option-btn`) : [];
+
+      for (let i = 0; i < buttons.length; i++) {
+        const btn = buttons[i];
+        btn.disabled = true;
+        if (btn.dataset.partId === currentPart.id) {
+          btn.classList.add(`is-correct`);
+        } else if (btn === selectedBtn && !isCorrect) {
+          btn.classList.add(`is-wrong`);
+        } else {
+          btn.classList.add(`is-muted`);
+        }
+      }
+
+      const feedbackRow = document.getElementById(`feedback-row`);
+      const feedbackMsg = document.getElementById(`feedback-msg`);
+      const nextBtn = document.getElementById(`next-btn`);
+
+      if (isCorrect) {
+        correctCount += 1;
+        playCorrectSound();
+        const scoreValue = document.getElementById(`score-value`);
+        if (scoreValue) scoreValue.textContent = String(computeScoreOutOf100());
+
+        if (feedbackRow) feedbackRow.className = `feedback-row is-correct`;
+        if (feedbackMsg) feedbackMsg.textContent = `Harika! Doğru cevap: ` + currentPart.name + `!`;
+        if (nextBtn) nextBtn.hidden = true;
+
+        advanceTimer = setTimeout(function() {
+          advanceTimer = null;
+          goNextQuestion();
+        }, AUTO_ADVANCE_MS);
+      } else {
+        wrongCount += 1;
+        awaitingNext = true;
+        playWrongSound();
+
+        if (feedbackRow) feedbackRow.className = `feedback-row is-wrong`;
+        if (feedbackMsg) feedbackMsg.textContent = `Doğrusu "` + currentPart.name + `" olacaktı.`;
+        if (nextBtn) {
+          nextBtn.hidden = false;
+          nextBtn.focus();
+        }
+      }
+    }
+
+    function goNextQuestion() {
+      if (advanceTimer) {
+        clearTimeout(advanceTimer);
+        advanceTimer = null;
+      }
+      currentIndex += 1;
+      if (currentIndex >= TOTAL_QUESTIONS) {
+        showEndScreen();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function showEndScreen() {
+      const finalScore = computeScoreOutOf100();
+      const scoreEl = document.getElementById(`final-score-num`);
+      const msgEl = document.getElementById(`end-message`);
+      const titleEl = document.getElementById(`end-title`);
+      const statCorrect = document.getElementById(`stat-correct`);
+      const statWrong = document.getElementById(`stat-wrong`);
+
+      if (scoreEl) scoreEl.textContent = String(finalScore);
+      if (statCorrect) statCorrect.textContent = correctCount + ` Doğru`;
+      if (statWrong) statWrong.textContent = wrongCount + ` Yanlış`;
+
+      if (titleEl && msgEl) {
+        if (finalScore >= 90) {
+          titleEl.innerHTML = `Harikasın <em>Şampiyon!</em>`;
+          msgEl.textContent = `Vücudumuzun tüm bölümlerini süper biliyorsun!`;
+        } else if (finalScore >= 60) {
+          titleEl.innerHTML = `Çok <em>Güzel!</em>`;
+          msgEl.textContent = `Harika bir iş çıkardın. Bir tur daha oynayarak 100 puana ulaşabilirsin!`;
+        } else {
+          titleEl.innerHTML = `Güzel <em>Deneme!</em>`;
+          msgEl.textContent = `Tekrar oynayarak vücudumuzun tüm bölümlerini kolayca öğrenebilirsin!`;
+        }
+      }
+
+      showScreen(`end-screen`);
+      playVictorySound();
+    }
+
+    function initStartPreviews() {
+      const p1 = document.getElementById(`preview-sticker-1`);
+      const p2 = document.getElementById(`preview-sticker-2`);
+      const p3 = document.getElementById(`preview-sticker-3`);
+      const facePart = BODY_PARTS.find(function(b) { return b.id === `yuz`; });
+      const handPart = BODY_PARTS.find(function(b) { return b.id === `el`; });
+      const eyePart = BODY_PARTS.find(function(b) { return b.id === `goz`; });
+      if (p1 && facePart) p1.innerHTML = facePart.svg;
+      if (p2 && handPart) p2.innerHTML = handPart.svg;
+      if (p3 && eyePart) p3.innerHTML = eyePart.svg;
+    }
+
+    document.addEventListener(`keydown`, function(e) {
+      const quizScreen = document.getElementById(`quiz-screen`);
+      if (!quizScreen || quizScreen.hidden) return;
+
+      if (!questionAnswered && (e.key === `1` || e.key === `2` || e.key === `3`)) {
+        const idx = Number(e.key) - 1;
+        const buttons = document.querySelectorAll(`#options-grid .option-btn`);
+        if (buttons[idx]) {
+          buttons[idx].click();
+        }
+      } else if (awaitingNext && (e.key === `Enter` || e.key === ` `)) {
+        const nextBtn = document.getElementById(`next-btn`);
+        if (nextBtn && !nextBtn.hidden) {
+          e.preventDefault();
+          nextBtn.click();
+        }
+      }
+    });
+
+    initStartPreviews();
+  </script>
+</body>
+</html>
